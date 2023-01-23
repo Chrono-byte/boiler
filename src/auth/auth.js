@@ -6,7 +6,7 @@ const axios = require("axios");
 require("dotenv").config();
 
 // import internal deps
-const { getUserByEmail, addUser, checkPassword } = require("../db/dbAPI");
+const { getUserByEmail, addUser, checkPassword, checkTokenAuth } = require("../db/dbAPI");
 
 // create router
 const router = express.Router();
@@ -163,11 +163,23 @@ router.get("/github-callback", (req, res) => {
 
 // authentication middleware, checks if user is logged in & redirects to login page if not, otherwise continues to next middleware
 const auth = (req, res, next) => {
-	if (req.body.token) {
+	// get token from request
+	// const url = new URL(req.url, `http://${req.headers.host}`);
+	// const token = url.searchParams.get("token");
+	const token = req.headers.authorization;
+
+	// console.log(req.headers.authorization);
+
+	// check if token is valid
+	const auth = checkTokenAuth(token);
+
+	if (auth) {
+		// set req.authenticated to true
+		req.authenticated = true;
+
 		next();
 	} else {
-		res.status(500).json({ error: "Not logged in" });
-		// res.redirect("/login");
+		res.status(500).json({ error: "Not authenticated." });
 	}
 };
 

@@ -162,6 +162,88 @@ app.use("/app", express.static(path.join(__dirname, "./app")));
 // login router
 app.use("/app/login", express.static(path.join(__dirname, "./app/login.html")));
 
+// log the structure of the server
+// console.log("Server Structure:");
+// console.log("├── /auth");
+// console.log("├── /api");
+// console.log("└── /app");
+
+/* log all the routes under /api
+console.log("Server Routes:");
+console.log("├── /auth");
+console.log("│   ├── /login");
+console.log("│   └── /register");
+console.log("├── /api");
+console.log("│   ├── /users");
+console.log("│   │   ├── /");
+console.log("│   │   ├── /:id");
+console.log("│   │   └── /:id/roles");	
+console.log("│   ├── /roles");
+console.log("│   │   ├── /");
+console.log("│   │   └── /:id");
+console.log("│   ├── /permissions");
+console.log("│   │   ├── /");
+console.log("│   │   └── /:id");
+console.log("│   ├── /servers");
+console.log("│   │   ├── /");
+console.log("│   │   └── /:id");
+console.log("│   ├── /server");
+console.log("│   │   ├── /:id");
+console.log("│   │   │   ├── /");
+console.log("│   │   │   ├── /users");
+console.log("│   │   │   ├── /roles");
+console.log("│   │   │   ├── /permissions");
+console.log("│   │   │   ├── /channels");
+console.log("│   │   │   ├── /channel");
+console.log("│   │   │   │   ├── /:id");
+console.log("│   │   │   │   │   ├── /");
+console.log("│   │   │   │   │   ├── /messages");
+console.log("│   │   │   │   │   └── /message");
+console.log("│   │   │   │   │       ├── /:id");
+console.log("│   │   │   │   │       │   ├── /");
+console.log("│   │   │   │   │       │   └── /reactions");
+console.log("│   │   │   │   │       └── /:id/reactions");
+console.log("│   │   │   │   └── /:id/messages");
+console.log("│   │   │   └── /channel");
+console.log("│   │   │       ├── /:id");
+console.log("│   │   │       │   ├── /");
+console.log("│   │   │       │   ├── /messages");
+console.log("│   │   │       │   └── /message");
+console.log("│   │   │       │       ├── /:id");
+console.log("│   │   │       │       │   ├── /");
+console.log("│   │   │       │       │   └── /reactions");
+console.log("│   │   │       │       └── /:id/reactions");
+console.log("│   │   │       └── /:id/messages");
+console.log("│   │   └── /:id/channel");
+console.log("│   │       ├── /:id");
+console.log("│   │       │   ├── /");
+console.log("│   │       │   ├── /messages");
+console.log("│   │       │   └── /message");
+console.log("│   │       │       ├── /:id");
+console.log("│   │       │       │   ├── /");
+console.log("│   │       │       │   └── /reactions");
+console.log("│   │       │       └── /:id/reactions");
+console.log("│   │       └── /:id/messages");
+console.log("│   ├── /channel");
+console.log("│   │   ├── /:id");
+console.log("│   │   │   ├── /");
+console.log("│   │   │   ├── /messages");
+console.log("│   │   │   └── /message");
+console.log("│   │   │       ├── /:id");
+console.log("│   │   │       │   ├── /");
+console.log("│   │   │       │   └── /reactions");
+console.log("│   │   │       └── /:id/reactions");
+console.log("│   │   └── /:id/messages");
+console.log("│   └── /message");
+console.log("│       ├── /:id");
+console.log("│       │   ├── /");
+console.log("│       │   └── /reactions");
+console.log("│       └── /:id/reactions");
+console.log("└── /app");
+*/
+
+// log the server version
+console.log(`Server Version: ${require("../package.json").version}`);
 // start the server
 let listener = app.listen(`${new Number(port) + 1}`, function () {
 	console.log("Server Functions API is listening on port http://localhost:" + listener.address().port);

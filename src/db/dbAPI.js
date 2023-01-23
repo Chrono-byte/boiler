@@ -112,4 +112,34 @@ function checkTokenAuth(token) {
 	}
 }
 
-module.exports = { getUserByEmail, getUserById, getChannelById, getChannelByName, addUser, checkTokenAuth, checkPassword };
+// create channel function
+function createChannel({ name, description }) {
+	// promise to return
+	const promise1 = new Promise((resolve, reject) => {
+		// check if channel exists
+		for (let channel of channels.values()) {
+			if (channel.name == name) {
+				reject("Channel already exists");
+			}
+		}
+		
+		// channel object
+		let channel = { id: generateSnowflake(), name: name, messages: [], members: [] }
+
+		channels.set(channel.id, channel);
+	});
+
+	return promise1;
+}
+
+// get user by token function
+function getUserByToken(token) {
+	for (let user of users.values()) {
+		if (user.token == token) {
+			return user;
+		}
+	}
+	return null;
+}
+
+module.exports = { getUserByEmail, getUserById, getChannelById, getChannelByName, addUser, checkTokenAuth, checkPassword, createChannel };
