@@ -1,0 +1,26 @@
+{
+  "name": "boiler",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "author": "chrono <chrono@disilla.org>",
+  "main": "src/server.js",
+  "scripts": {
+    "lint": "eslint . --ext js",
+    "lint:fix": "eslint . --ext js"
+  },
+  "dependencies": {
+    "axios": "^1.2.3",
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "uuid": "^9.0.0",
+    "ws": "^8.12.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.32.0",
+    "eslint-plugin-json": "^3.1.0"
+  }
+}
