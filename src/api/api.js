@@ -50,8 +50,10 @@ router.get("/channels/:id", (req, res) => {
 	}
 	let { id } = req.query;
 
+	
+
 	// fetch channel from database
-	res.status(200).json(getChannelById(id));
+	// res.status(200).json(getChannelById(id));
 });
 
 // create channel endpoint
