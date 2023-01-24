@@ -1,95 +1,146 @@
 // import eventemitter 
 const EventEmitter = require('events');
 
+// import internal deps
+const { users, getUserByEmail, getUserById } = require("../db/users");
+const { generateSnowflake } = require("../util/snowflake");
+
 class Message {
-    constructor(content, author, channel) {
-        this.content = content;
-        this.author = author;
-        this.channel = channel;
+	constructor(content, author, channel) {
+		this.content = content;
+		this.author = author;
 
-        this.createdAt = new Date();
+		this.createdAt = new Date();
 
-        this.reply = false;
-    }
-} 
+		this.reply = false;
 
-class BaseChannel extends EventEmitter {
-    constructor() {
-        super();
-    }
-
-    send(message) {
-        throw new Error("Not implemented");
-    }
+		this.id = generateSnowflake();
+	}
 }
 
-class Member extends BaseChannel {
-    constructor(id, username) {
-        super();
-        this.id = id;
-        this.username = username;
-
-        this.joinedAt = new Date();
-        this.avatarURL = null;
-
-        this.permissions = {
-            ADMINISTRATOR: false,
-            MANAGE_CHANNELS: false,
-            MANAGE_MESSAGES: false
-        }
-    }
-
-    send(message) {
-        throw new Error("Not implemented");
-    }
+class BaseChannel {
+	constructor() {
+		this.messages = new Map();
+	}
 }
 
-class User extends Member {
-    constructor(id, username) {
-        super(id, username);
-    }
+class Member {
+	constructor(user) {
+		this.username = user.username;
+		this.id = user.id;
 
-    send(message) {
-        throw new Error("Not implemented");
-    }
+		this.joinedAt = user.joinedAt;
+		this.avatarURL = user.avatarURL;
+
+		this.permissions = user.permissions;
+	}
+}
+
+class User {
+	constructor(email, username, hash, permissions, id) {
+		this.email = email;
+		this.hash = hash;
+
+		this.username = username;
+		this.id = id;
+
+		this.joinedAt = new Date();
+		this.avatarURL = null;
+
+		this.permissions = {
+			ADMINISTRATOR: permissions.ADMINISTRATOR,
+			MANAGE_CHANNELS: permissions.MANAGE_CHANNELS,
+			MANAGE_MESSAGES: permissions.MANAGE_MESSAGES
+		}
+
+		this.token = null;
+		this.socket = null;
+		this.sequence = 0;
+
+		this.Member = new Member(this);
+	}
+
+	send(message) {
+		throw new Error("Not implemented");
+	}
+
+	setAvatarURL(url) {
+		// regex to check if url is valid
+		const regex = /^(http|https):\/\/[^ "]+$/
+
+		if (!regex.test(url)) {
+			throw new Error("Invalid URL");
+		}
+
+		// check that url is an image
+		if (!url.endsWith(".png") && !url.endsWith(".jpg") && !url.endsWith(".jpeg")) {
+			throw new Error("URL is not an image");
+		}
+
+		this.avatarURL = url;
+	}
 }
 
 class Channel extends BaseChannel {
-    constructor(name, description) {
-        super();
-        this.name = name;
-        this.description = description;
+	constructor(name, description, id, owner) {
+		super();
+		this.name = name;
+		this.description = description;
 
-        this.members = new Map();
+		this.id = id;
 
-        this.owner = null;
-    }
+		this.members = new Map();
 
-    addMember(member) {
-        this.members.set(member.id, member);
-    }
+		this.owner = owner;
+	}
 
-    removeMember(member) {
-        this.members.delete(member.id);
-    }
+	addMember(member) {
+		this.members.set(member.id, member);
+	}
 
-    setOwner(member) {
-        this.owner = member;
-    }
+	removeMember(member) {
+		this.members.delete(member.id);
+	}
 
-    sendAll(message) {
-        this.members.forEach(member => {
-            member.send(message);
-        });
-    }
+	setOwner(member) {
+		this.owner = member;
+	}
 
-    broadcast(message) {
-        this.members.forEach(member => {
-            if (member.id !== this.owner.id) {
-                member.send(message);
-            }
-        });
-    }
+	sendAll(message) {
+		console.log("Sending message to all members");
+
+		console.log(this.members);
+
+		this.members.forEach(member => {
+			// get the member's full user from the id
+			const user = getUserById(member.id);
+
+			console.log("Sending message to " + user.email);
+
+			// message = JSON.stringify({
+			//     op: 0,
+			//     d: new Message(message, this.owner, this),
+			//     sequence: member.sequence += 1,
+			//     type: "message"
+			// });
+
+			// console.log(message);
+
+			// member.socket.send(message);
+		});
+	}
+
+
+	broadcast(message) {
+		this.members.forEach(member => {
+			if (member.id !== this.owner.id) {
+				member.send(message);
+			}
+		});
+	}
 }
 
-module.exports = { Message, BaseChannel, Member, User, Channel };
+module.exports = {
+	User,
+	Channel
+}

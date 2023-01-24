@@ -6,7 +6,7 @@ const axios = require("axios");
 require("dotenv").config();
 
 // import internal deps
-const { getUserByEmail, addUser, checkPassword, checkTokenAuth } = require("../db/dbAPI");
+const { getUserByEmail, addUser, checkPassword, checkTokenAuth, getUserByToken } = require("../db/dbAPI");
 
 // create router
 const router = express.Router();
@@ -17,15 +17,21 @@ const jwt = require("jsonwebtoken");
 router.post("/login/email", (req, res) => {
 	let { username, password } = req.query;
 
+	// check that username and password were provided
+	if (!username || !password) {
+		res.status(400).json({ error: "Missing username or password" });
+		return;
+	}
+
 	let user = getUserByEmail(username);
 
 	user.then((user) => {
 		// check if user exists
 		if (user) {
 			// check if password is correct
-			if (checkPassword(password, user.passwordHash)) {
+			if (checkPassword(password, user.hash)) {
 				// generate token
-				const token = jwt.sign({ username: user.username, id: user.id }, process.env.JWT_SECRET, {
+				const token = jwt.sign({ username: user.username, id: user.id, permissions: user.permissions }, process.env.JWT_SECRET, {
 					expiresIn
 						: "12h"
 				});
@@ -64,7 +70,11 @@ router.post("register", (req, res) => {
 			res.status(500).json({ error: "User already exists" });
 		} else {
 			// add user to database
-			addUser(email, username, password).then(() => {
+			addUser(email, username, password, {
+				ADMINISTRATOR: false,
+				MANAGE_CHANNELS: false,
+				MANAGE_MESSAGES: false
+			}).then(() => {
 				// send success
 				res.json({ success: true });
 			}).catch((err) => {
@@ -93,6 +103,8 @@ const auth = (req, res, next) => {
 	if (auth) {
 		// set req.authenticated to true
 		req.authenticated = true;
+
+		req.user = getUserByToken(token);
 
 		next();
 	} else {

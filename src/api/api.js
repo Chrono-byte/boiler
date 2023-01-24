@@ -17,6 +17,10 @@ const { getUserByEmail, getUserById, getChannelById, getChannelByName, addUser, 
 // create router
 const router = express.Router();
 
+// create event emitter
+const EventEmitter = require("events");
+const communicator = new EventEmitter();
+
 router.use(express.json());
 router.use(auth);
 
@@ -28,8 +32,7 @@ router.get("/", (req, res) => {
 		"version": npm_package_version,
 		"uptime": process.uptime(),
 		"mem": process.memoryUsage(),
-		"authenticated": false,
-		"protocol": 1
+		"authenticated": false
 	}
 
 	status.authenticated = req.authenticated;
@@ -50,8 +53,6 @@ router.get("/channels/:id", (req, res) => {
 	}
 	let { id } = req.query;
 
-	
-
 	// fetch channel from database
 	// res.status(200).json(getChannelById(id));
 });
@@ -66,8 +67,6 @@ router.post("/channels", (req, res) => {
 	}
 
 	let { name, description } = req.body;
-
-	console.log(req.body);
 
 	// check that name is a valid string
 	if (typeof name !== "string") {
@@ -84,11 +83,14 @@ router.post("/channels", (req, res) => {
 	}
 
 	// add channel to database
-	createChannel({ name: name, description: "A channel created by the API" }).catch((err) => {
+	createChannel({ name: name, description: "A channel created by the API" }, req.user.id).catch((err) => {
 		console.log(err);
 	});
 
 	let channel = getChannelByName(name);
+
+	// log channel creation
+	console.log(`Channel ${channel.name} created by ${req.user.username}`);
 
 	if (channel == null) {
 		res.status(409).json({ error: "Channel could not be created" });
@@ -108,19 +110,17 @@ router.put("/channels/:id/members", (req, res) => {
 		return;
 	}
 	let { id } = req.params;
-	let { user } = req.body;
 
-	// check if user is authenticated
-	if (!req.authenticated) {
+	let user = getUserById(req.user.id);
+	let uid = req.user.id;
+
+	console.log(`${user.username} is requesting to join channel ${getChannelById(id).name}`);
+
+	// check if user is already in channel
+	if (getChannelById(id).members.has(uid)) {
 		// send error
-		res.status(401).json({ error: "User is not authenticated" });
+		res.status(409).json({ error: "User is already in channel" });
 		return;
-	}
-
-	// check if user is valid
-	if (typeof user !== "string") {
-		// send error
-		res.status(500).json({ error: "Invalid user" });
 	}
 
 	// check if channel exists
@@ -130,11 +130,29 @@ router.put("/channels/:id/members", (req, res) => {
 	}
 
 	// add user to channel
-	getChannelById(id).members.push(user);
+	try {
+		getChannelById(id).members.set(uid, getUserById(uid).Member);
+	}
+	catch (err) {
+		console.log(err);
+	}
+
+	// check if user is in channel
+	if (!getChannelById(id).members.has(uid)) {
+		// send error
+		console.log(`${user.username} could not be added to channel`);
+		return;
+	} else if (getChannelById(id).members.has(uid)) {
+		console.log(`${user.username} was added to channel`);
+	}
+
+	// emit event for WS gateway
+	communicator.emit("channelJoin", { channel: id, user: uid });
 
 	// send channel over network
 	res.status(200).json(getChannelById(id));
+	return;
 });
 
 // export router
-module.exports = router;
+module.exports = { router, communicator };

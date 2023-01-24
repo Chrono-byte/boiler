@@ -1,6 +1,6 @@
 # TODO
 
-[ ] - Create/Join Channel
+[d] - Create/Join Channel
 [ ] - Send/Receive Messages
 [ ] - Channel Permissions
 

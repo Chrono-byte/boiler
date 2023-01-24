@@ -4,41 +4,12 @@ const { generateSnowflake } = require("../util/snowflake");
 // import external deps
 const bcrypt = require("bcrypt");
 
-// generate user id
-function generateUserId() {
-	return generateSnowflake() + 1024;
-}
+// import internal deps
+const { Member, User, Channel } = require("../structures/structures");
 
-// data structure to store users
-const users = new Map();
-
+const { users, getUserByEmail, getUserById } = require("./users");
 // data structure to store channels
 const channels = new Map();
-
-// get user by username function
-function getUserByEmail(username) {
-	const promise1 = new Promise((resolve, reject) => {
-		for (let user of users.values()) {
-			if (user.email == username) {
-				return resolve(user);
-			}
-		}
-
-		reject("User does not exist");
-	});
-
-	return promise1;
-}
-
-// get user by id function
-function getUserById(id) {
-	for (let user of users.values()) {
-		if (user.id == id) {
-			return user;
-		}
-	}
-	return null;
-}
 
 // get channel by id function
 function getChannelById(id) {
@@ -61,17 +32,22 @@ function getChannelByName(name) {
 }
 
 // add user to database
-function addUser(email, username, password) {
+function addUser(email, username, password, permissions) {
+	// create promise
 	const promise1 = new Promise((resolve, reject) => {
 		// hash password
 		bcrypt.hash(password, 10).then((hash) => {
-			let id = generateUserId();
+			let id = generateSnowflake();
 
 			// add user to database
-			users.set(id, { email: email, username: username, passwordHash: hash, id: id });
+			users.set(id, new User(email, username, hash, {
+				ADMINISTRATOR: permissions.ADMINISTRATOR,
+				MANAGE_CHANNELS: permissions.MANAGE_CHANNELS,
+				MANAGE_MESSAGES: permissions.MANAGE_MESSAGES
+			}, id));
 
 			// send success
-			resolve("User added to database");
+			resolve(users.get(id));
 		}).catch((err) => {
 			// send error
 			// res.status(500).json({ error: "Error adding user to database" });
@@ -113,7 +89,7 @@ function checkTokenAuth(token) {
 }
 
 // create channel function
-function createChannel({ name, description }) {
+function createChannel({ name, description }, owner) {
 	// promise to return
 	const promise1 = new Promise((resolve, reject) => {
 		// check if channel exists
@@ -122,11 +98,16 @@ function createChannel({ name, description }) {
 				reject("Channel already exists");
 			}
 		}
-		
+
+		// get user from database
+		let user = getUserById(owner).Member;
+
 		// channel object
-		let channel = { id: generateSnowflake(), name: name, messages: [], members: [] }
+		let channel = new Channel(name, description, generateSnowflake(), user);
 
 		channels.set(channel.id, channel);
+
+		resolve(channel);
 	});
 
 	return promise1;
@@ -142,4 +123,4 @@ function getUserByToken(token) {
 	return null;
 }
 
-module.exports = { getUserByEmail, getUserById, getChannelById, getChannelByName, addUser, checkTokenAuth, checkPassword, createChannel };
+module.exports = { getUserByEmail, getUserById, getChannelById, getChannelByName, addUser, checkTokenAuth, checkPassword, createChannel, channels, users, getUserByToken };

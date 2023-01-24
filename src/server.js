@@ -17,7 +17,7 @@ require("dotenv").config();
 
 // import external deps
 const jwt = require("jsonwebtoken");
-const { addUser, checkTokenAuth } = require("./db/dbAPI");
+const db = require("./db/dbAPI");
 // const  authMW  = require("./auth/auth").auth;
 
 // prompt the user for the port
@@ -25,12 +25,15 @@ const port = process.argv[2] || 8080;
 
 // internal routers
 const auth = require("./auth/auth").router;
-const api = require("./api/api");
+const api = require("./api/api").router;
 const { log } = require("console");
 
 // create a new websocket server
 const wss = new Server({ port: port });
 const app = express();
+
+// import com from api
+const com = require("./api/api").communicator;
 
 // allow CORS
 app.use(cors({ origin: true, credentials: true }));
@@ -47,7 +50,7 @@ wss.on("connection", (ws, req) => {
 	}
 
 	// check that the connection is an authorized user
-	const auth = checkTokenAuth(token);
+	const auth = db.checkTokenAuth(token);
 	let sequence = 0;
 
 	if (auth == false) {
@@ -72,6 +75,13 @@ wss.on("connection", (ws, req) => {
 		username = "Unknown";
 	}
 
+	// get the user from the database
+	const user = db.getUserByToken(token);
+
+	// set the user's token & socket
+	user.token = token;
+	user.socket = ws;
+
 	// handshake complete variable
 	let handshakeComplete = false;
 
@@ -81,12 +91,13 @@ wss.on("connection", (ws, req) => {
 
 		// set our sequence count
 		sequence += 1;
+		user.sequence = sequence;
 
 		// if sequence is not equal to the sequence count, reject the message & close the connection
 		if (message.sequence != sequence) {
 			// log the error
 			log(`Sequence mismatch for ${username}!`);
-			log(`Expected ${sequence}, got ${Pmessage.sequence}!`);
+			log(`Expected ${sequence}, got ${message.sequence}!`);
 
 			// close the connection
 			ws.close();
@@ -103,7 +114,7 @@ wss.on("connection", (ws, req) => {
 					ws.send(JSON.stringify({
 						op: 1,
 						data: null,
-						sequence: sequence+=1,
+						sequence: sequence += 1,
 						type: "HEARTBEAT"
 					}));
 				}, message.data.heartbeat_interval);
@@ -120,6 +131,10 @@ wss.on("connection", (ws, req) => {
 			// switch on the op code 0-9, empty blocks
 			switch (message.op) {
 				case 0:
+					// get the channel from the database
+					const channel = db.channels.get(message.data.channel);
+
+					channel.sendAll(message.data.message);
 					break;
 				case 1:
 					break;
@@ -143,10 +158,24 @@ wss.on("connection", (ws, req) => {
 					break;
 			}
 		}
-
-		// console.log(`Received message ${} from user ${username}`);
-		// console.log(Pmessage);
 	});
+});
+
+com.on("channelJoin", (obj) => {
+	let { user, channel } = obj;
+
+	// get the channel from the database
+	user = db.getUserById(user);
+
+	// send the channel join message
+	user.socket.send(JSON.stringify({
+		op: 0,
+		data: {
+			channel: db.getChannelById(channel),
+		},
+		sequence: user.sequence += 1,
+		type: "CHANNEL_JOIN"
+	}));
 });
 
 // authentication router
@@ -163,15 +192,24 @@ app.use("/app/login", express.static(path.join(__dirname, "./app/login.html")));
 
 // log the server version
 console.log(`Server Version: ${require("../package.json").version}`);
+
 // start the server
 let listener = app.listen(`${new Number(port) + 1}`, function () {
-	console.log("Server Functions API is listening on port http://localhost:" + listener.address().port);
+	console.log("Server API is listening on port http://localhost:" + listener.address().port);
+});
 
-	addUser("admin@disilla.org", "admin", "password").then(() => {
-		console.log("Admin user created!");
+db.addUser("admin@disilla.org", "admin", "password", {
+	ADMINISTRATOR: true,
+	MANAGE_CHANNELS: true,
+	MANAGE_MESSAGES: true
+}).then((user) => {
+	db.createChannel({ name: "general", description: "The general channel" }, user.id).then((channel) => { 
+		// log the channel
 	}).catch((err) => {
 		console.log(err);
 	});
+}).catch((err) => {
+	console.log(err);
 });
 
-console.log(`Server listening on port http://localhost:${wss.address().port}`);
+console.log(`Gateway listening on port http://localhost:${wss.address().port}`);
