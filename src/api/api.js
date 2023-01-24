@@ -1,3 +1,12 @@
+"use strict";
+
+/*
+ * Hammer - A simple WebSocket-based chat server & client written in JavaScript.
+ *
+ * Copyright (C) 2023 Michael G. <chrono@disilla.org>
+ */
+
+// net-related imports
 const express = require("express");
 require("dotenv").config();
 

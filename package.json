@@ -1,8 +1,8 @@
 {
   "name": "boiler",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
-  "license": "AGPL-3.0-only",
+  "license": "zlib-acknowledgement",
   "author": "chrono <chrono@disilla.org>",
   "main": "src/server.js",
   "scripts": {
@@ -17,6 +17,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
+    "prompts": "^2.4.2",
     "uuid": "^9.0.0",
     "ws": "^8.12.0"
   },
