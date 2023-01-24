@@ -77,13 +77,13 @@ wss.on("connection", (ws, req) => {
 
 	ws.on("message", (message) => {
 		// parse the message
-		let Pmessage = JSON.parse(message);
+		message = JSON.parse(message);
 
 		// set our sequence count
 		sequence += 1;
 
 		// if sequence is not equal to the sequence count, reject the message & close the connection
-		if (Pmessage.sequence != sequence) {
+		if (message.sequence != sequence) {
 			// log the error
 			log(`Sequence mismatch for ${username}!`);
 			log(`Expected ${sequence}, got ${Pmessage.sequence}!`);
@@ -96,7 +96,7 @@ wss.on("connection", (ws, req) => {
 		// check if the handshake is complete
 		if (handshakeComplete == false) {
 			// await falken identify payload
-			if (Pmessage.op == 11 && Pmessage.type == "IDENTIFY") {
+			if (message.op == 11 && message.type == "IDENTIFY") {
 				// set the heartbeat interval
 				setInterval(() => {
 					// send the heartbeat
@@ -106,7 +106,7 @@ wss.on("connection", (ws, req) => {
 						sequence: sequence+=1,
 						type: "HEARTBEAT"
 					}));
-				}, Pmessage.data.heartbeat_interval);
+				}, message.data.heartbeat_interval);
 
 				// set the handshake complete variable
 				handshakeComplete = true;
@@ -118,7 +118,7 @@ wss.on("connection", (ws, req) => {
 			}
 		} else {
 			// switch on the op code 0-9, empty blocks
-			switch (Pmessage.op) {
+			switch (message.op) {
 				case 0:
 					break;
 				case 1:
@@ -153,7 +153,6 @@ wss.on("connection", (ws, req) => {
 app.use("/auth", auth);
 
 // api router
-app.use("/api/v3", api);
 app.use("/api", api);
 
 // app router
@@ -161,86 +160,6 @@ app.use("/app", express.static(path.join(__dirname, "./app")));
 
 // login router
 app.use("/app/login", express.static(path.join(__dirname, "./app/login.html")));
-
-// log the structure of the server
-// console.log("Server Structure:");
-// console.log("├── /auth");
-// console.log("├── /api");
-// console.log("└── /app");
-
-/* log all the routes under /api
-console.log("Server Routes:");
-console.log("├── /auth");
-console.log("│   ├── /login");
-console.log("│   └── /register");
-console.log("├── /api");
-console.log("│   ├── /users");
-console.log("│   │   ├── /");
-console.log("│   │   ├── /:id");
-console.log("│   │   └── /:id/roles");	
-console.log("│   ├── /roles");
-console.log("│   │   ├── /");
-console.log("│   │   └── /:id");
-console.log("│   ├── /permissions");
-console.log("│   │   ├── /");
-console.log("│   │   └── /:id");
-console.log("│   ├── /servers");
-console.log("│   │   ├── /");
-console.log("│   │   └── /:id");
-console.log("│   ├── /server");
-console.log("│   │   ├── /:id");
-console.log("│   │   │   ├── /");
-console.log("│   │   │   ├── /users");
-console.log("│   │   │   ├── /roles");
-console.log("│   │   │   ├── /permissions");
-console.log("│   │   │   ├── /channels");
-console.log("│   │   │   ├── /channel");
-console.log("│   │   │   │   ├── /:id");
-console.log("│   │   │   │   │   ├── /");
-console.log("│   │   │   │   │   ├── /messages");
-console.log("│   │   │   │   │   └── /message");
-console.log("│   │   │   │   │       ├── /:id");
-console.log("│   │   │   │   │       │   ├── /");
-console.log("│   │   │   │   │       │   └── /reactions");
-console.log("│   │   │   │   │       └── /:id/reactions");
-console.log("│   │   │   │   └── /:id/messages");
-console.log("│   │   │   └── /channel");
-console.log("│   │   │       ├── /:id");
-console.log("│   │   │       │   ├── /");
-console.log("│   │   │       │   ├── /messages");
-console.log("│   │   │       │   └── /message");
-console.log("│   │   │       │       ├── /:id");
-console.log("│   │   │       │       │   ├── /");
-console.log("│   │   │       │       │   └── /reactions");
-console.log("│   │   │       │       └── /:id/reactions");
-console.log("│   │   │       └── /:id/messages");
-console.log("│   │   └── /:id/channel");
-console.log("│   │       ├── /:id");
-console.log("│   │       │   ├── /");
-console.log("│   │       │   ├── /messages");
-console.log("│   │       │   └── /message");
-console.log("│   │       │       ├── /:id");
-console.log("│   │       │       │   ├── /");
-console.log("│   │       │       │   └── /reactions");
-console.log("│   │       │       └── /:id/reactions");
-console.log("│   │       └── /:id/messages");
-console.log("│   ├── /channel");
-console.log("│   │   ├── /:id");
-console.log("│   │   │   ├── /");
-console.log("│   │   │   ├── /messages");
-console.log("│   │   │   └── /message");
-console.log("│   │   │       ├── /:id");
-console.log("│   │   │       │   ├── /");
-console.log("│   │   │       │   └── /reactions");
-console.log("│   │   │       └── /:id/reactions");
-console.log("│   │   └── /:id/messages");
-console.log("│   └── /message");
-console.log("│       ├── /:id");
-console.log("│       │   ├── /");
-console.log("│       │   └── /reactions");
-console.log("│       └── /:id/reactions");
-console.log("└── /app");
-*/
 
 // log the server version
 console.log(`Server Version: ${require("../package.json").version}`);
