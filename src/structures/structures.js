@@ -1,6 +1,18 @@
 // import eventemitter 
 const EventEmitter = require('events');
 
+class Message {
+    constructor(content, author, channel) {
+        this.content = content;
+        this.author = author;
+        this.channel = channel;
+
+        this.createdAt = new Date();
+
+        this.reply = false;
+    }
+} 
+
 class BaseChannel extends EventEmitter {
     constructor() {
         super();
@@ -16,6 +28,15 @@ class Member extends BaseChannel {
         super();
         this.id = id;
         this.username = username;
+
+        this.joinedAt = new Date();
+        this.avatarURL = null;
+
+        this.permissions = {
+            ADMINISTRATOR: false,
+            MANAGE_CHANNELS: false,
+            MANAGE_MESSAGES: false
+        }
     }
 
     send(message) {
@@ -71,3 +92,4 @@ class Channel extends BaseChannel {
     }
 }
 
+module.exports = { Message, BaseChannel, Member, User, Channel };
