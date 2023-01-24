@@ -5,6 +5,7 @@ Boiler is a chat server written in JavaScript. It is the reference implementatio
 ## Installation
 
 Note: Hammer is currently in development and is not ready for production use.
+
 ## License
 
 Hammer is currently all rights reserved. This will change in the future.
