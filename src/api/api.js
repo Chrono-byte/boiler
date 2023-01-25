@@ -36,11 +36,36 @@ router.use(auth);
 // API status endpoint
 router.get("/", (req, res) => {
 	let status = {
+		// server info
 		"name": "Hammer Test Server",
-		"health": "OK",
-		"version": npm_package_version,
-		"uptime": process.uptime(),
-		"mem": process.memoryUsage(),
+		"description": "A simple WebSocket-based chat server & client written in JavaScript",
+
+		// server health
+		"health": ["OK", {
+			"uptime": process.uptime(),
+			"mem": process.memoryUsage(),
+			"cpu": process.cpuUsage(),
+		}],
+
+		// server build/brand info
+		"brand": {
+			"build": {
+				"date": process.env.BUILD_DATE,
+				"commit": process.env.BUILD_COMMIT,
+				"branch": process.env.BUILD_BRANCH,
+				"tag": process.env.BUILD_TAG,
+			},
+			"brand": {
+				"name": "Boiler",
+				"version": npm_package_version
+			},
+			"authors": [
+				"Chrono <chrono@disilla.org>",
+				"tehZevo"
+			]
+		},
+
+		// auth status, non-authenticated agents will not be able to access any other endpoints
 		"authenticated": false
 	}
 
@@ -87,12 +112,12 @@ router.post("/channels", (req, res) => {
 	// check if channel exists
 	if (getChannelByName(name) != null) {
 		// send error
-		res.status(409).json({ error: "Channel already exists" });
+		// res.status(409).json({ error: "Channel already exists" });
 		return;
 	}
 
 	// add channel to database
-	createChannel({ name: name, description: "A channel created by the API" }, req.user.id).catch((err) => {
+	createChannel({ name: name, description: description }, req.user.id).catch((err) => {
 		console.log(err);
 	});
 

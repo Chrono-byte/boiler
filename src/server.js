@@ -49,6 +49,9 @@ app.use(express.json());
 wss.on("connection", (ws, req) => {
 	const url = new URL(req.url, `http://${req.headers.host}`);
 	const token = url.searchParams.get("token");
+	ws.json = (data) => {
+		ws.send(JSON.stringify(data));
+	}
 
 	// check that token was provided
 	if (!token) {
@@ -59,17 +62,18 @@ wss.on("connection", (ws, req) => {
 	const auth = db.checkTokenAuth(token);
 	let sequence = 0;
 
+	// if the connection is not authorized, close the connection
 	if (auth == false) {
 		ws.close();
 		return;
 	} else {
 		// send authorized handshake
-		ws.send(JSON.stringify({
+		ws.json({
 			op: 10,
 			data: { message: "Authorized" },
 			sequence: sequence += 1,
 			type: "HELLO"
-		}));
+		});
 	}
 
 	let username;
@@ -95,8 +99,9 @@ wss.on("connection", (ws, req) => {
 	let handshakeComplete = false;
 
 	ws.on("message", (message) => {
-
-		try {		// parse the message
+		// try to parse the message, if it fails, close the connection
+		try {		
+			// parse the message
 			message = JSON.parse(message);
 		} catch (err) {
 			// console.log the error
@@ -130,7 +135,7 @@ wss.on("connection", (ws, req) => {
 				// set the heartbeat interval
 				setInterval(() => {
 					// send the heartbeat
-					ws.send(JSON.stringify({
+					ws.json(({
 						op: 1,
 						data: null,
 						sequence: sequence += 1,
@@ -158,7 +163,7 @@ wss.on("connection", (ws, req) => {
 			// verify that channel is provided
 			if (!message.data.channel) {
 				console.log(`${username} requested to join a channel but didn't provide one!`);
-				ws.send(JSON.stringify({
+				ws.json(({
 					op: 9,
 					data: {
 						message: "You've sent a message without a channel!"
@@ -172,7 +177,7 @@ wss.on("connection", (ws, req) => {
 			// verify that the channel exists
 			if (!db.channels.has(message.data.channel)) {
 				console.log(`${username} requested non-existant channel does not exist!`);
-				ws.send(JSON.stringify({
+				ws.json(({
 					op: 9,
 					data: {
 						message: "That channel does not exist!"
@@ -185,7 +190,7 @@ wss.on("connection", (ws, req) => {
 
 			// verify that the user is actually in the channel requested
 			if (!db.channels.get(message.data.channel).users.includes(user.id)) {
-				ws.send(JSON.stringify({
+				ws.json(({
 					op: 9,
 					data: {
 						message: "You are not in that channel!"
@@ -210,7 +215,7 @@ wss.on("connection", (ws, req) => {
 
 					// verify that the status is valid
 					if (message.data.status < 0 || message.data.status > 4) {
-						ws.send(JSON.stringify({
+						ws.json(({
 							op: 9,
 							data: {
 								message: "Invalid status!"
@@ -271,7 +276,7 @@ com.on("channelJoin", (obj) => {
 	user = db.getUserById(user);
 
 	// send the channel join message
-	user.socket.send(JSON.stringify({
+	user.socket.json(({
 		op: 0,
 		data: {
 			channel: db.getChannelById(channel),

@@ -116,7 +116,13 @@ const auth = (req, res, next) => {
 
 		next();
 	} else {
-		res.status(500).json({ error: "Not authenticated." });
+		// check if the route is for the API status endpoint
+		if (req.url === "/") {
+			// allow access to /api/ routes
+			next();
+		} else {
+			res.status(500).json({ error: "Not authenticated." });
+		}
 	}
 };
 
