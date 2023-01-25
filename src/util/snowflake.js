@@ -3,7 +3,7 @@
 /*
  * Hammer - A simple WebSocket-based chat server & client written in JavaScript.
  *
- * Copyright (C) 2023 Michael G. <chrono@disilla.org>
+ * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
 const { v4: uuidv4 } = require("uuid");
