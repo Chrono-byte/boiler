@@ -10,15 +10,18 @@ const prompts = require('prompts');
 
 function Banner() {
     // print the banner
-    console.log("Hammer - A simple WebSocket-based chat server & client written in JavaScript.");
+    // print boiler server branding
+    console.log(`Boiler - Version ${require("../package.json").version}`);
+    // print hammer branding
+    console.log("Hammer - A simple WebSocket-based chat server & client.");
     // log version from package.json
-    console.log(`Version ${require("../package.json").version}`);
-    console.log("");
     console.log("Copyright (C) 2023 Hammer Authors <chrono@disilla.org>");
     console.log("");
-    // console.log("This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.");
-    // console.log("This program is not free software; for details type `show c'.");
-    // console.log("");
+    // print notice that this program is licensed under the terms of the zlib with aknowledgement license
+    // print notice of no warranty
+    console.log("This program is licensed under the terms of the zlib with aknowledgement license.");
+    console.log("THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.");
+    console.log("");
 }
 
 // prompt for control commands
