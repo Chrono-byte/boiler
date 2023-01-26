@@ -9,5 +9,5 @@
 
 [ ] - Non-volatile storage
 
-[ ] - Avatars
+[d] - Avatars
 [ ] - Update Display name
