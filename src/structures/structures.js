@@ -134,7 +134,7 @@ class Channel extends BaseChannel {
 			    type: "message"
 			});
 
-			// console.log(message);
+			console.log(user.id);
 
 			member.socket.send(message);
 		});
