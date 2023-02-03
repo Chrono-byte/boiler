@@ -311,7 +311,10 @@ com.on("updateUser", (obj) => {
 	user = db.getUserById(user);
 
 	// find every channel the user is in
-	for (let channel of user.channels) { }
+	for (let channel of user.channels) { 
+		// log channel name
+		console.log(channel.name);
+	}
 });
 
 // authentication router

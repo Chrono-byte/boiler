@@ -5,12 +5,7 @@
  *
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
-
-// import eventemitter 
-const EventEmitter = require('events');
-
-// import internal deps
-const { users, getUserByEmail, getUserById } = require("../db/users");
+const { getUserById } = require("../db/users");
 const { generateSnowflake } = require("../util/snowflake");
 
 class Message {
