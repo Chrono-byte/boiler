@@ -71,6 +71,8 @@ class User {
 	}
 
 	send(message) {
+		console.log("Sending message: " + message);
+
 		throw new Error("Not implemented");
 	}
 
