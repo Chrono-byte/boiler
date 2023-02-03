@@ -15,11 +15,6 @@ const npm_package_version = require("../../package.json").version;
 // import authentication middleware
 const { auth } = require("../auth/auth");
 
-// import external deps
-const jwt = require("jsonwebtoken");
-
-// import internal deps
-const { generateSnowflake } = require("../util/snowflake");
 // import database functions
 const { getChannelById, getChannelByName, createChannel, deleteChannel, kickUserFromChannel, addUserToChannel } = require("../db/dbAPI");
 const { getUserById } = require("../db/users");

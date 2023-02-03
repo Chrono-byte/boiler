@@ -13,9 +13,9 @@ const { generateSnowflake } = require("../util/snowflake");
 const bcrypt = require("bcrypt");
 
 // import internal deps
-const { Member, User, Channel } = require("../structures/structures");
+const { User, Channel } = require("../structures/structures");
 
-const { users, getUserByEmail, getUserById } = require("./users");
+const { users, getUserById } = require("./users");
 // data structure to store channels
 const channels = new Map();
 

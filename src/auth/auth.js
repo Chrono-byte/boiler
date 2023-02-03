@@ -8,7 +8,6 @@
 
 // net-related modules
 const express = require("express");
-const axios = require("axios");
 
 // import environment
 require("dotenv").config();
