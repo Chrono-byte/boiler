@@ -26,7 +26,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const db = require("./db/dbAPI");
 const { getUserById, users } = require("./db/users");
-const { Banner, commandPrompt } = require("./cmd");
+const { Banner } = require("./cmd");
 
 // prompt the user for the port
 const port = process.argv[2] || 8080;
