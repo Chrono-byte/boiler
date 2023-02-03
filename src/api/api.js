@@ -81,9 +81,8 @@ router.get("/channels/:id", (req, res) => {
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
+	
 	let { id } = req.query;
-
-	return console.log("get channel endpoint " + id);
 
 	// check that requesting user is a member of the channel
 	if (!getChannelById(id).members.includes(req.user.id)) {
