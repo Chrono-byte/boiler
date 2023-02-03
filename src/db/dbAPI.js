@@ -121,6 +121,88 @@ function createChannel({ name, description }, owner) {
 	return promise1;
 }
 
+// delete channel function
+function deleteChannel(id) {
+	// promise to return
+	const promise1 = new Promise((resolve, reject) => {
+		// check if channel exists
+		for (let channel of channels.values()) {
+			if (channel.id == id) {
+				channels.delete(id);
+				resolve("Channel deleted");
+			}
+		}
+
+		reject("Channel does not exist");
+	});
+
+	return promise1;
+}
+
+// add user to channel function
+function addUserToChannel(id, user) {
+	// get user from database
+	try {
+		user = getUserById(user);
+	} catch (err) {
+		return console.log(err);
+	}
+
+	// promise to return
+	const promise1 = new Promise((resolve, reject) => {
+		// check if channel exists
+		let channel = getChannelById(id);
+
+		if (channel) {
+			// check if user is in channel
+			for (let member of channel.members.values()) {
+				if (member.id == user.id) {
+					reject("User is already in channel");
+				}
+			}
+
+			// add user to channel
+			channel.members.set(user.id, user);
+
+			// add channel to user's channels
+			user.channels.set(channel.id, channel);
+
+			resolve("User added to channel");
+		} else {
+			reject("Channel does not exist");
+		}
+	})
+
+	return promise1;
+}
+
+// kick user from channel function
+function kickUserFromChannel(id, user) {
+	// promise to return
+	const promise1 = new Promise((resolve, reject) => {
+		// check if channel exists
+		for (let channel of channels.values()) {
+			if (channel.id == id) {
+				// check if user is in channel
+				for (let member of channel.members.values()) {
+					if (member.id == user) {
+						channel.members.delete(user);
+						resolve("User kicked from channel");
+					}
+				}
+
+				reject("User is not in channel");
+			}
+
+			reject("Channel does not exist");
+		}
+
+		reject("Channel does not exist");
+	});
+
+	return promise1;
+}
+
 // get user by token function
 function getUserByToken(token) {
 	for (let user of users.values()) {
@@ -131,4 +213,4 @@ function getUserByToken(token) {
 	return null;
 }
 
-module.exports = { getUserByEmail, getUserById, getChannelById, getChannelByName, addUser, checkTokenAuth, checkPassword, createChannel, channels, users, getUserByToken };
+module.exports = { addUser, checkPassword, checkTokenAuth, createChannel, deleteChannel, getChannelById, getChannelByName, getUserByToken, kickUserFromChannel, addUserToChannel };

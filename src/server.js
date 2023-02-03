@@ -25,6 +25,7 @@ require("dotenv").config();
 // import external deps
 const jwt = require("jsonwebtoken");
 const db = require("./db/dbAPI");
+const { getUserById, users } = require("./db/users");
 const { Banner, commandPrompt } = require("./cmd");
 
 // prompt the user for the port
@@ -64,8 +65,7 @@ wss.on("connection", (ws, req) => {
 
 	// if the connection is not authorized, close the connection
 	if (auth == false) {
-		ws.close();
-		return;
+		return ws.close();
 	} else {
 		// send authorized handshake
 		ws.json({
@@ -95,12 +95,13 @@ wss.on("connection", (ws, req) => {
 	user.token = token;
 	user.socket = ws;
 
+	console.log(`User ${username} has joined the server!`);
 	// handshake complete variable
 	let handshakeComplete = false;
 
 	ws.on("message", (message) => {
 		// try to parse the message, if it fails, close the connection
-		try {		
+		try {
 			// parse the message
 			message = JSON.parse(message);
 		} catch (err) {
@@ -208,7 +209,7 @@ wss.on("connection", (ws, req) => {
 			switch (message.op) {
 				case 0:
 					// send message
-					channel.sendAll(message.data.message);
+					// channel.sendAll(message.data.message);
 					break;
 				case 1:
 					// update user status / activity
@@ -227,11 +228,8 @@ wss.on("connection", (ws, req) => {
 					}
 					break;
 				case 2:
-					// send the typing indicator
-					channel.sendTyping(user);
 					break;
 				case 3:
-
 					break;
 				case 4:
 					break;
@@ -269,11 +267,12 @@ wss.on("connection", (ws, req) => {
 	});
 });
 
+// channel join event
 com.on("channelJoin", (obj) => {
 	let { user, channel } = obj;
 
 	// get the channel from the database
-	user = db.getUserById(user);
+	user = getUserById(user);
 
 	// send the channel join message
 	user.socket.json(({
@@ -286,24 +285,53 @@ com.on("channelJoin", (obj) => {
 	}));
 });
 
+// channel leave event
+com.on("channelLeave", (obj) => {
+	let { user, channel } = obj;
+
+	// get the channel from the database
+	user = db.getUserById(user);
+
+	// send the channel join message
+	user.socket.json(({
+		op: 0,
+		data: {
+			channel: db.getChannelById(channel),
+		},
+		sequence: user.sequence += 1,
+		type: "CHANNEL_LEAVE"
+	}));
+});
+
+// update user event
+com.on("updateUser", (obj) => {
+	let { user } = obj;
+
+	// get the user from the database
+	user = db.getUserById(user);
+
+	// find every channel the user is in
+	for (let channel of user.channels) { }
+});
+
 // authentication router
 app.use("/auth", auth);
 
 // api router
 app.use("/api", api);
 
-// app router
+// // app router
 app.use("/app", express.static(path.join(__dirname, "./app")));
 
-// login router
+// // login router
 app.use("/app/login", express.static(path.join(__dirname, "./app/login.html")));
 
 // start the server
 let listener = app.listen(`${new Number(port) + 1}`, function () {
 	Banner();
 
-	console.log("Server API is listening on port http://localhost:" + listener.address().port);
 	console.log(`Gateway listening on port http://localhost:${wss.address().port}`);
+	console.log("Server API is listening on port http://localhost:" + listener.address().port);
 });
 
 db.addUser("admin@disilla.org", "admin", "password", {
@@ -312,7 +340,11 @@ db.addUser("admin@disilla.org", "admin", "password", {
 	MANAGE_MESSAGES: true
 }).then((user) => {
 	db.createChannel({ name: "general", description: "The general channel" }, user.id).then((channel) => {
-		// console.log the channel
+		db.addUserToChannel(channel.id, user.id).catch((err) => {
+			console.log(err);
+		});
+
+		console.log(users.get(user.id).channels);
 	}).catch((err) => {
 		console.log(err);
 	});

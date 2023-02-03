@@ -14,7 +14,8 @@ const axios = require("axios");
 require("dotenv").config();
 
 // import internal deps
-const { getUserByEmail, addUser, checkPassword, checkTokenAuth, getUserByToken } = require("../db/dbAPI");
+const { addUser, checkPassword, checkTokenAuth, getUserByToken } = require("../db/dbAPI");
+const { getUserByEmail } = require("../db/users");
 
 // create router
 const router = express.Router();
@@ -121,7 +122,7 @@ const auth = (req, res, next) => {
 			// allow access to /api/ routes
 			next();
 		} else {
-			res.status(500).json({ error: "Not authenticated." });
+			res.status(401).json({ error: "Not authenticated." });
 		}
 	}
 };

@@ -15,8 +15,13 @@ const { generateSnowflake } = require("../util/snowflake");
 
 class Message {
 	constructor(content, author, channel) {
+		console.log("Creating new message");
+		console.log({ content, author, channel });
+
 		this.content = content;
 		this.author = author;
+
+		this.channel = channel;
 
 		this.createdAt = new Date();
 
@@ -66,10 +71,16 @@ class User {
 		this.sequence = 0;
 
 		this.Member = new Member(this);
+
+		this.channels = new Map();
 	}
 
 	send(message) {
 		throw new Error("Not implemented");
+	}
+
+	setUsername(username) {
+		this.username = username;
 	}
 
 	setAvatarURL(url) {
@@ -115,26 +126,22 @@ class Channel extends BaseChannel {
 	}
 
 	sendAll(message) {
-		console.log("Sending message to all members");
-
-		console.log(this.members);
-
 		this.members.forEach(member => {
 			// get the member's full user from the id
 			const user = getUserById(member.id);
 
-			console.log("Sending message to " + user.email);
+			// console.log("Sending message to " + user.email);
 
-			// message = JSON.stringify({
-			//     op: 0,
-			//     d: new Message(message, this.owner, this),
-			//     sequence: member.sequence += 1,
-			//     type: "message"
-			// });
+			message = JSON.stringify({
+			    op: 0,
+			    d: new Message(message, this.owner, this),
+			    sequence: member.sequence += 1,
+			    type: "message"
+			});
 
 			// console.log(message);
 
-			// member.socket.send(message);
+			member.socket.send(message);
 		});
 	}
 

@@ -21,7 +21,8 @@ const jwt = require("jsonwebtoken");
 // import internal deps
 const { generateSnowflake } = require("../util/snowflake");
 // import database functions
-const { getUserByEmail, getUserById, getChannelById, getChannelByName, addUser, createChannel, getUserByToken } = require("../db/dbAPI");
+const { getChannelById, getChannelByName, createChannel, deleteChannel, kickUserFromChannel, addUserToChannel } = require("../db/dbAPI");
+const { getUserById } = require("../db/users");
 
 // create router
 const router = express.Router();
@@ -61,7 +62,7 @@ router.get("/", (req, res) => {
 			},
 			"authors": [
 				"Chrono <chrono@disilla.org>",
-				"tehZevo"
+				// "tehZevo"
 			]
 		},
 
@@ -135,6 +136,152 @@ router.post("/channels", (req, res) => {
 	res.status(200).json(channel);
 });
 
+// delete channel endpoint
+router.delete("/channels/:id", (req, res) => {
+	// check if user is authenticated
+	if (!req.authenticated) {
+		// send error
+		res.status(401).json({ error: "User is not authenticated" });
+		return;
+	}
+
+	// check if channel exists
+	if (getChannelById(id) == null) {
+		// send error
+		res.status(500).json({ error: "Channel does not exist" });
+		return;
+	}
+
+	// check if user is owner of channel
+	if (getChannelById(id).owner != req.user.id) {
+		// send error
+		res.status(401).json({ error: "User is not owner of channel" });
+		return;
+	}
+
+	let { id } = req.params;
+
+	// delete channel
+	deleteChannel(id);
+
+	// send success
+	res.status(200).json({ success: true });
+	return;
+});
+
+// get channel members endpoint
+router.get("/channels/:id/members/", (req, res) => {
+	// check if user is authenticated
+	if (!req.authenticated) {
+		// send error
+		res.status(401).json({ error: "User is not authenticated" });
+		return;
+	}
+
+	let { id } = req.params;
+
+	// check if channel exists
+	if (getChannelById(id) == null) {
+		// send error
+		res.status(500).json({ error: "Channel does not exist" });
+	}
+
+	// send channel over network
+	res.status(200).json(getChannelById(id).members);
+	return;
+});
+
+// kick user endpoint
+router.delete("/channels/:id/members/:uid", (req, res) => {
+	// check if user is authenticated
+	if (!req.authenticated) {
+		// send error
+		res.status(401).json({ error: "User is not authenticated" });
+		return;
+	}
+
+	let { id, uid } = req.params;
+
+	// check if channel exists
+	if (getChannelById(id) == null) {
+		// send error
+		res.status(500).json({ error: "Channel does not exist" });
+		return;
+	}
+
+	// check if user is owner OR a server admin
+	if (getChannelById(id).owner != req.user.id && !req.user.permissions.ADMINISTRATOR) {
+		// send error
+		res.status(401).json({ error: "Refused." });
+		return;
+	}
+
+	// check if user is in channel
+	if (!getChannelById(id).members.has(uid)) {
+		// send error
+		res.status(500).json({ error: "User is not in channel" });
+		return;
+	}
+
+	try {
+		// kick user
+		kickUserFromChannel(id, uid);
+	} catch (err) {
+		// send error
+		res.status(500).json({ error: "User could not be kicked" });
+		return;
+	}
+
+	// send success
+	res.status(200).json({ success: true });
+	return;
+});
+
+// leave channel endpoint
+router.delete("/channels/:id/members/@me", (req, res) => {
+	// check if user is authenticated
+	if (!req.authenticated) {
+		// send error
+		res.status(401).json({ error: "User is not authenticated" });
+		return;
+	}
+
+	let { id } = req.params;
+
+	// check if channel exists
+	if (getChannelById(id) == null) {
+		// send error
+		res.status(500).json({ error: "Channel does not exist" });
+		return;
+	}
+
+	// check if user is in channel and that the user is not the owner
+	if (!getChannelById(id).members.has(req.user.id) || getChannelById(id).owner.id == req.user.id) {
+		// send error
+		res.status(500).json({ error: "User is not in channel" });
+		return;
+	}
+
+	// remove user from channel
+	try {
+		getChannelById(id).members.delete(req.user.id);
+	} catch (err) {
+		// send error
+		res.status(500).json({ error: "User could not be removed" });
+		return;
+	}
+
+	// emit event for WS gateway
+	communicator.emit("channelLeave", { channel: id, user: req.user.id });
+
+	// remove channel id from user's channel list
+	getUserById(req.user.id).channels.delete(id);
+
+	// send success
+	res.status(200).json({ success: true });
+	return;
+});
+
 // put user into channel endpoint
 router.put("/channels/:id/members", (req, res) => {
 	// check if user is authenticated
@@ -165,7 +312,9 @@ router.put("/channels/:id/members", (req, res) => {
 
 	// add user to channel
 	try {
-		getChannelById(id).members.set(uid, getUserById(uid).Member);
+		addUserToChannel(id, uid).catch(err => {
+			console.log(err);
+		});
 	}
 	catch (err) {
 		console.log(err);
@@ -185,6 +334,159 @@ router.put("/channels/:id/members", (req, res) => {
 
 	// send channel over network
 	res.status(200).json(getChannelById(id));
+	return;
+});
+
+// get user info endpoint
+router.get("/user/:id", (req, res) => {
+	// check if user is authenticated
+	if (!req.authenticated) {
+		// send error
+		res.status(401).json({ error: "User is not authenticated" });
+		return;
+	}
+
+	let { id } = req.params;
+
+	// check if user exists
+	if (getUserById(id) == null) {
+		// send error
+		res.status(500).json({ error: "User does not exist" });
+		return;
+	}
+
+	// send user over network
+	res.status(200).json(getUserById(id).Member);
+	return;
+});
+
+// set user avatar endpoint
+router.put("/user/:id/avatar", (req, res) => {
+	// check if user is authenticated
+	if (!req.authenticated) {
+		// send error
+		res.status(401).json({ error: "User is not authenticated" });
+		return;
+	}
+
+	let { id } = req.params;
+
+	// check if user exists and if the user making the request is the user
+	if (getUserById(id) == null || id != req.user.id) {
+		// send error
+		res.status(500).json({ error: "User does not exist" });
+		return;
+	}
+
+	// check if avatar is set
+	if (req.body.avatar == null) {
+		// send error
+		res.status(500).json({ error: "Avatar is not set" });
+		return;
+	}
+
+	// set avatar
+	getUserById(id).setAvatarURL(req.body.avatar);
+
+	// send success
+	res.status(200).json({ success: true });
+	return;
+});
+
+// get user avatar endpoint
+router.get("/user/:id/avatar", (req, res) => {
+	// check if user is authenticated
+	if (!req.authenticated) {
+		// send error
+		res.status(401).json({ error: "User is not authenticated" });
+		return;
+	}
+
+	let { id } = req.params;
+
+	// check if user exists
+	if (getUserById(id) == null) {
+		// send error
+		res.status(500).json({ error: "User does not exist" });
+		return;
+	}
+
+	// send avatar over network
+	res.status(200).json({ avatar: getUserById(id).avatarURL });
+	return;
+});
+
+// set username endpoint
+router.put("/user/:id/username", (req, res) => {
+	// check if user is authenticated
+	if (!req.authenticated) {
+		// send error
+		res.status(401).json({ error: "User is not authenticated" });
+		return;
+	}
+
+	let { id } = req.params;
+
+	// check if user exists and if the user making the request is the user
+	if (getUserById(id) == null || id != req.user.id) {
+		// send error
+		res.status(500).json({ error: "User does not exist" });
+		return;
+	}
+
+	// check if username is set
+	if (req.body.username == null) {
+		// send error
+		res.status(500).json({ error: "Username is not set" });
+		return;
+	}
+
+	// set username
+	getUserById(id).setUsername(req.body.username);
+
+	// fire updateUser event for WS gateway
+	communicator.emit("updateUser", { user: id });
+});
+
+// get all channels a user is in endpoint
+router.get("/user/:id/channels", (req, res) => {
+	// check if user is authenticated
+	if (!req.authenticated) {
+		// send error
+		res.status(401).json({ error: "User is not authenticated" });
+		return;
+	}
+
+	let { id } = req.params;
+
+	// check that user is the user making the request
+	if (id != req.user.id) {
+		// send error
+		res.status(401).json({ error: "You are not authorized to do this" });
+		return;
+	}
+
+	// check if user exists
+	if (getUserById(id) == null) {
+		// send error
+		res.status(500).json({ error: "User does not exist" });
+		return;
+	}
+
+	let channels = getUserById(id).channels;
+	let cArray = [];
+
+	// loop through channels
+	for (let channel of channels) {
+		// push channel to array
+		cArray.push(channel);
+	}
+
+	// log channels
+	console.log(cArray);
+	
+	// send channels over network
+	res.status(200).json(cArray);
 	return;
 });
 
