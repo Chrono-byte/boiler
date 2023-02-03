@@ -85,8 +85,15 @@ router.get("/channels/:id", (req, res) => {
 
 	return console.log("get channel endpoint " + id);
 
+	// check that requesting user is a member of the channel
+	if (!getChannelById(id).members.includes(req.user.id)) {
+		// send error
+		res.status(401).json({ error: "User is not a member of channel" });
+		return;
+	}
+
 	// fetch channel from database
-	// res.status(200).json(getChannelById(id));
+	return res.status(200).json(getChannelById(id));
 });
 
 // create channel endpoint
