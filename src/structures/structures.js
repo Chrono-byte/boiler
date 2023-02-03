@@ -71,6 +71,8 @@ class User {
 	}
 
 	send(message) {
+		console.log("Sending message: " + message);
+
 		throw new Error("Not implemented");
 	}
 
@@ -134,7 +136,7 @@ class Channel extends BaseChannel {
 			    type: "message"
 			});
 
-			// console.log(message);
+			console.log(user.id);
 
 			member.socket.send(message);
 		});
