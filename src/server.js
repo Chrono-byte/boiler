@@ -209,6 +209,7 @@ wss.on("connection", (ws, req) => {
 			switch (message.op) {
 				case 0:
 					// send message
+					console.log(`${username} sent a message in ${channel.name}!`);
 					// channel.sendAll(message.data.message);
 					break;
 				case 1:
