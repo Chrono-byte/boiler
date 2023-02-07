@@ -283,7 +283,7 @@ com.on("updateUser", (obj) => {
 	user = db.getUserById(user);
 
 	// find every channel the user is in
-	for (let channel of user.channels) { 
+	for (let channel of user.channels) {
 		// log channel name
 		console.log(channel.name);
 	}
@@ -318,8 +318,6 @@ db.addUser("admin@disilla.org", "admin", "password", {
 		db.addUserToChannel(channel.id, user.id).catch((err) => {
 			console.log(err);
 		});
-
-		console.log(users.get(user.id).channels);
 	}).catch((err) => {
 		console.log(err);
 	});

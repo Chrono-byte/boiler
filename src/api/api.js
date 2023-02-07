@@ -484,9 +484,6 @@ router.get("/user/:id/channels", (req, res) => {
 		// push channel to array
 		cArray.push(channel);
 	}
-
-	// log channels
-	console.log(cArray);
 	
 	// send channels over network
 	res.status(200).json(cArray);
