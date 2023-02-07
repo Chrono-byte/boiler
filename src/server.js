@@ -61,7 +61,6 @@ wss.on("connection", (ws, req) => {
 
 	// check that the connection is an authorized user
 	const auth = db.checkTokenAuth(token);
-	let sequence = 0;
 
 	// if the connection is not authorized, close the connection
 	if (auth == false) {
@@ -71,7 +70,6 @@ wss.on("connection", (ws, req) => {
 		ws.json({
 			op: 10,
 			data: { message: "Authorized" },
-			sequence: sequence += 1,
 			type: "HELLO"
 		});
 	}
@@ -114,21 +112,6 @@ wss.on("connection", (ws, req) => {
 			return;
 		}
 
-		// set our sequence count
-		sequence += 1;
-		user.sequence = sequence;
-
-		// if sequence is not equal to the sequence count, reject the message & close the connection
-		if (message.sequence != sequence) {
-			// console.log the error
-			console.log(`Sequence mismatch for ${username}!`);
-			console.log(`Expected ${sequence}, got ${message.sequence}!`);
-
-			// close the connection
-			ws.close();
-			return;
-		}
-
 		// check if the handshake is complete
 		if (!handshakeComplete) {
 			// await falken identify payload
@@ -139,7 +122,6 @@ wss.on("connection", (ws, req) => {
 					ws.json(({
 						op: 1,
 						data: null,
-						sequence: sequence += 1,
 						type: "HEARTBEAT"
 					}));
 				}, message.data.heartbeat_interval);
@@ -169,7 +151,6 @@ wss.on("connection", (ws, req) => {
 					data: {
 						message: "You've sent a message without a channel!"
 					},
-					sequence: sequence += 1,
 					type: "ERROR"
 				}));
 				return;
@@ -183,7 +164,6 @@ wss.on("connection", (ws, req) => {
 					data: {
 						message: "That channel does not exist!"
 					},
-					sequence: sequence += 1,
 					type: "ERROR"
 				}));
 				return;
@@ -196,7 +176,6 @@ wss.on("connection", (ws, req) => {
 					data: {
 						message: "You are not in that channel!"
 					},
-					sequence: sequence += 1,
 					type: "ERROR"
 				}));
 				return;
@@ -222,7 +201,6 @@ wss.on("connection", (ws, req) => {
 							data: {
 								message: "Invalid status!"
 							},
-							sequence: sequence += 1,
 							type: "ERROR"
 						}));
 						return;
@@ -260,11 +238,6 @@ wss.on("connection", (ws, req) => {
 		if (user.token) {
 			user.token = null;
 		}
-
-		// remove the user's sequence, if it exists
-		if (user.sequence) {
-			user.sequence = null;
-		}
 	});
 });
 
@@ -281,7 +254,6 @@ com.on("channelJoin", (obj) => {
 		data: {
 			channel: db.getChannelById(channel),
 		},
-		sequence: user.sequence += 1,
 		type: "CHANNEL_JOIN"
 	}));
 });
@@ -299,7 +271,6 @@ com.on("channelLeave", (obj) => {
 		data: {
 			channel: db.getChannelById(channel),
 		},
-		sequence: user.sequence += 1,
 		type: "CHANNEL_LEAVE"
 	}));
 });

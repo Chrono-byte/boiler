@@ -63,7 +63,6 @@ class User {
 
 		this.token = null;
 		this.socket = null;
-		this.sequence = 0;
 
 		this.Member = new Member(this);
 
@@ -132,7 +131,6 @@ class Channel extends BaseChannel {
 			message = JSON.stringify({
 			    op: 0,
 			    d: new Message(message, this.owner, this),
-			    sequence: member.sequence += 1,
 			    type: "message"
 			});
 
