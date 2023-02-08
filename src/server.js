@@ -25,7 +25,7 @@ require("dotenv").config();
 // import external deps
 const jwt = require("jsonwebtoken");
 const db = require("./db/dbAPI");
-const { getUserById, users } = require("./db/users");
+const { getUserById } = require("./db/users");
 const { Banner } = require("./cmd");
 
 // prompt the user for the port
@@ -52,7 +52,7 @@ wss.on("connection", (ws, req) => {
 	const token = url.searchParams.get("token");
 	ws.json = (data) => {
 		ws.send(JSON.stringify(data));
-	}
+	};
 
 	// check that token was provided
 	if (!token) {
@@ -159,18 +159,18 @@ wss.on("connection", (ws, req) => {
 			// verify that the channel exists
 			if (!db.channels.has(message.data.channel)) {
 				console.log(`${username} requested non-existant channel does not exist!`);
-				ws.json(({
+				ws.json({
 					op: 9,
 					data: {
 						message: "That channel does not exist!"
 					},
 					type: "ERROR"
-				}));
+				});
 				return;
 			}
 
 			// verify that the user is actually in the channel requested
-			if (!db.channels.get(message.data.channel).users.includes(user.id)) {
+			if (!db.channels.get(message.data.channel).members.has(user.id)) {
 				ws.json(({
 					op: 9,
 					data: {
@@ -182,14 +182,16 @@ wss.on("connection", (ws, req) => {
 			}
 
 			// update current sock channel
-			channel = db.channels.get(message.data.channel);
+			var channel = db.channels.get(message.data.channel);
 
 			// switch on the op code 0-9, empty blocks
 			switch (message.op) {
 				case 0:
 					// send message
-					console.log(`${username} sent a message in ${channel.name}!`);
-					// channel.sendAll(message.data.message);
+					channel.sendAll({
+						content: message.data.content,
+						author: user.Member
+					}, user);
 					break;
 				case 1:
 					// update user status / activity
@@ -247,14 +249,25 @@ com.on("channelJoin", (obj) => {
 
 	// get the channel from the database
 	user = getUserById(user);
+	channel = db.getChannelById(channel);
 
 	// send the channel join message
 	user.socket.json(({
 		op: 0,
 		data: {
-			channel: db.getChannelById(channel),
+			channel: channel,
 		},
 		type: "CHANNEL_JOIN"
+	}));
+
+	// send the channel join message
+	user.socket.json(({
+		op: 0,
+		data: {
+			channel: channel,
+			content: `${user.username} has joined the channel!`
+		},
+		type: "MESSAGE"
 	}));
 });
 
@@ -318,9 +331,21 @@ db.addUser("admin@disilla.org", "admin", "password", {
 		db.addUserToChannel(channel.id, user.id).catch((err) => {
 			console.log(err);
 		});
+		db.addUser("me@disilla.org", "chrono", "password", {
+			ADMINISTRATOR: false,
+			MANAGE_CHANNELS: false,
+			MANAGE_MESSAGES: false
+		}).then((nuser) => {
+			db.addUserToChannel(channel.id, nuser.id).catch((err) => {
+				console.log(err);
+			});
+		}).catch((err) => {
+			console.log(err);
+		});
 	}).catch((err) => {
 		console.log(err);
 	});
 }).catch((err) => {
 	console.log(err);
 });
+

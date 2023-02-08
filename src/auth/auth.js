@@ -40,8 +40,7 @@ router.post("/login/email", (req, res) => {
 			if (checkPassword(password, user.hash)) {
 				// generate token
 				const token = jwt.sign({ username: user.username, id: user.id, permissions: user.permissions }, process.env.JWT_SECRET, {
-					expiresIn
-						: "12h"
+					expiresIn: "12h"
 				});
 
 				// assign token to user

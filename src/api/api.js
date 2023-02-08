@@ -63,7 +63,7 @@ router.get("/", (req, res) => {
 
 		// auth status, non-authenticated agents will not be able to access any other endpoints
 		"authenticated": false
-	}
+	};
 
 	status.authenticated = req.authenticated;
 
@@ -81,7 +81,7 @@ router.get("/channels/:id", (req, res) => {
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
-	
+
 	let { id } = req.query;
 
 	// check that requesting user is a member of the channel
@@ -460,7 +460,7 @@ router.get("/user/:id/channels", (req, res) => {
 		return;
 	}
 
-	let { id } = req.params;
+	var { id } = req.params;
 
 	// check that user is the user making the request
 	if (id != req.user.id) {
@@ -476,15 +476,15 @@ router.get("/user/:id/channels", (req, res) => {
 		return;
 	}
 
-	let channels = getUserById(id).channels;
-	let cArray = [];
+	var channels = getUserById(id).channels;
 
-	// loop through channels
-	for (let channel of channels) {
-		// push channel to array
-		cArray.push(channel);
+	var cArray = Array.from(channels);
+
+	// delete all messages from channels
+	for (var i = 0; i < cArray.length; i++) {
+		cArray[i].messages = [];
 	}
-	
+
 	// send channels over network
 	res.status(200).json(cArray);
 	return;

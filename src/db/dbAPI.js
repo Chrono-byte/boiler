@@ -162,7 +162,7 @@ function addUserToChannel(id, user) {
 			}
 
 			// add user to channel
-			channel.members.set(user.id, user);
+			channel.members.set(user.id, user.Member);
 
 			// add channel to user's channels
 			user.channels.set(channel.id, channel);
@@ -171,7 +171,7 @@ function addUserToChannel(id, user) {
 		} else {
 			reject("Channel does not exist");
 		}
-	})
+	});
 
 	return promise1;
 }
@@ -213,4 +213,4 @@ function getUserByToken(token) {
 	return null;
 }
 
-module.exports = { addUser, checkPassword, checkTokenAuth, createChannel, deleteChannel, getChannelById, getChannelByName, getUserByToken, kickUserFromChannel, addUserToChannel };
+module.exports = { addUser, checkPassword, checkTokenAuth, createChannel, deleteChannel, getChannelById, getChannelByName, getUserByToken, kickUserFromChannel, addUserToChannel, channels };

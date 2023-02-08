@@ -59,7 +59,7 @@ class User {
 			ADMINISTRATOR: permissions.ADMINISTRATOR,
 			MANAGE_CHANNELS: permissions.MANAGE_CHANNELS,
 			MANAGE_MESSAGES: permissions.MANAGE_MESSAGES
-		}
+		};
 
 		this.token = null;
 		this.socket = null;
@@ -81,7 +81,7 @@ class User {
 
 	setAvatarURL(url) {
 		// regex to check if url is valid
-		const regex = /^(http|https):\/\/[^ "]+$/
+		const regex = /^(http|https):\/\/[^ "]+$/;
 
 		if (!regex.test(url)) {
 			throw new Error("Invalid URL");
@@ -121,22 +121,19 @@ class Channel extends BaseChannel {
 		this.owner = member;
 	}
 
-	sendAll(message) {
+	sendAll(message, from) {
 		this.members.forEach(member => {
 			// get the member's full user from the id
 			const user = getUserById(member.id);
+			if (member.id == from.id) return;
 
-			// console.log("Sending message to " + user.email);
-
-			message = JSON.stringify({
-			    op: 0,
-			    d: new Message(message, this.owner, this),
-			    type: "message"
-			});
-
-			console.log(user.id);
-
-			member.socket.send(message);
+			try {
+				user.socket.json({
+					op: 0,
+					data: new Message(message.content, message.author, this),
+					type: "MESSAGE"
+				});
+			} catch (e) { console.log(e); }
 		});
 	}
 
@@ -153,4 +150,4 @@ class Channel extends BaseChannel {
 module.exports = {
 	User,
 	Channel
-}
+};
