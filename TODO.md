@@ -4,7 +4,7 @@
 [d] - Send/Receive Messages
 [ ] - Channel Permissions
 
-[d] - Replies
+[ ] - Replies
 [ ] - Attachments
 
 [ ] - Non-volatile storage
