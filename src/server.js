@@ -143,42 +143,57 @@ wss.on("connection", (ws, req) => {
 				return;
 			}
 
-			// verify that channel is provided
-			if (!message.data.channel) {
-				console.log(`${username} requested to join a channel but didn't provide one!`);
-				ws.json(({
-					op: 9,
-					data: {
-						message: "You've sent a message without a channel!"
-					},
-					type: "ERROR"
-				}));
-				return;
-			}
+			// check if it's a non-zero opcode
+			if (message.op == 0) {
+				// verify that channel is provided
+				if (!message.data.channel) {
+					console.log(`${username} requested to join a channel but didn't provide one!`);
 
-			// verify that the channel exists
-			if (!db.channels.has(message.data.channel)) {
-				console.log(`${username} requested non-existant channel does not exist!`);
-				ws.json({
-					op: 9,
-					data: {
-						message: "That channel does not exist!"
-					},
-					type: "ERROR"
-				});
-				return;
-			}
+					// log data
+					console.log(message.data);
 
-			// verify that the user is actually in the channel requested
-			if (!db.channels.get(message.data.channel).members.has(user.id)) {
-				ws.json(({
-					op: 9,
-					data: {
-						message: "You are not in that channel!"
-					},
-					type: "ERROR"
-				}));
-				return;
+					ws.json(({
+						op: 9,
+						data: {
+							message: "You've sent a message without a channel!"
+						},
+						type: "ERROR"
+					}));
+					return;
+				}
+
+				// verify that the channel exists
+				if (!db.channels.has(message.data.channel)) {
+					console.log(`${username} requested non-existant channel!`);
+
+					// log data
+					console.log(message.data);
+
+					ws.json({
+						op: 9,
+						data: {
+							message: "That channel does not exist!"
+						},
+						type: "ERROR"
+					});
+					return;
+				}
+
+				// verify that the user is actually in the channel requested
+				if (!db.channels.get(message.data.channel).members.has(user.id)) {
+
+					// log data
+					console.log(message.data);
+
+					ws.json(({
+						op: 9,
+						data: {
+							message: "You are not in that channel!"
+						},
+						type: "ERROR"
+					}));
+					return;
+				}
 			}
 
 			// update current sock channel
@@ -187,11 +202,13 @@ wss.on("connection", (ws, req) => {
 			// switch on the op code 0-9, empty blocks
 			switch (message.op) {
 				case 0:
+					console.log(message.data);
+
 					// send message
 					channel.sendAll({
 						content: message.data.content,
-						author: user.Member
-					}, user);
+						reply: (message.data.reply) ? message.data.reply : null
+					}, user.id);
 					break;
 				case 1:
 					// update user status / activity
@@ -210,21 +227,26 @@ wss.on("connection", (ws, req) => {
 					break;
 				case 2:
 					break;
-				case 3:
+				case 3: // client wishes to identify as a human user
 					break;
-				case 4:
+				case 4: // client wishes to become a bot
+					// TODO: handle upgrade to bot
 					break;
-				case 5:
+				case 5: // client wants to send a file
+					// TODO: handle this
 					break;
-				case 6:
+				case 6: // client wants to become a teapot
+					// TODO: handle this
 					break;
-				case 7:
+				case 7: // client wants to offer itself as service
 					break;
-				case 8:
+				case 8: // client wants to request a service
 					break;
-				case 9:
+				case 9: // client thinks we had an error
+					console.error(`Client ${username} thinks we had an error!`);
 					break;
 				default:
+					console.error(`Client ${username} sent an invalid op code!`);
 					break;
 			}
 		}
