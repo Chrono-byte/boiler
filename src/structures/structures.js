@@ -10,11 +10,8 @@ const { generateSnowflake } = require("../util/snowflake");
 
 class Message {
 	constructor(content, author, channel) {
-		console.log("Creating new message");
-		console.log({ content, author, channel });
-
 		this.content = content;
-		this.author = author;
+		this.author = channel.members.get(author) ? channel.members.get(author) : null;
 
 		this.channel = channel;
 
@@ -59,11 +56,10 @@ class User {
 			ADMINISTRATOR: permissions.ADMINISTRATOR,
 			MANAGE_CHANNELS: permissions.MANAGE_CHANNELS,
 			MANAGE_MESSAGES: permissions.MANAGE_MESSAGES
-		}
+		};
 
 		this.token = null;
 		this.socket = null;
-		this.sequence = 0;
 
 		this.Member = new Member(this);
 
@@ -82,7 +78,7 @@ class User {
 
 	setAvatarURL(url) {
 		// regex to check if url is valid
-		const regex = /^(http|https):\/\/[^ "]+$/
+		const regex = /^(http|https):\/\/[^ "]+$/;
 
 		if (!regex.test(url)) {
 			throw new Error("Invalid URL");
@@ -122,31 +118,32 @@ class Channel extends BaseChannel {
 		this.owner = member;
 	}
 
-	sendAll(message) {
+	sendAll(message, from) {
 		this.members.forEach(member => {
 			// get the member's full user from the id
 			const user = getUserById(member.id);
+			if (!user.socket || member.id == from) return;
 
-			// console.log("Sending message to " + user.email);
-
-			message = JSON.stringify({
-			    op: 0,
-			    d: new Message(message, this.owner, this),
-			    sequence: member.sequence += 1,
-			    type: "message"
-			});
-
-			console.log(user.id);
-
-			member.socket.send(message);
+			try {
+				user.socket.json({
+					op: 0,
+					data: new Message(message.content, from, this),
+					type: "MESSAGE"
+				});
+			} catch (e) { console.log(e); }
 		});
 	}
 
 
 	broadcast(message) {
 		this.members.forEach(member => {
+			const user = getUserById(member.id);
 			if (member.id !== this.owner.id) {
-				member.send(message);
+				user.socket.json({
+					op: 0,
+					data: new Message(message.content, "hehe", this),
+					type: "MESSAGE"
+				});
 			}
 		});
 	}
@@ -155,4 +152,4 @@ class Channel extends BaseChannel {
 module.exports = {
 	User,
 	Channel
-}
+};

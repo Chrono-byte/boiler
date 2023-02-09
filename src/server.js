@@ -25,7 +25,7 @@ require("dotenv").config();
 // import external deps
 const jwt = require("jsonwebtoken");
 const db = require("./db/dbAPI");
-const { getUserById, users } = require("./db/users");
+const { getUserById } = require("./db/users");
 const { Banner } = require("./cmd");
 
 // prompt the user for the port
@@ -52,7 +52,7 @@ wss.on("connection", (ws, req) => {
 	const token = url.searchParams.get("token");
 	ws.json = (data) => {
 		ws.send(JSON.stringify(data));
-	}
+	};
 
 	// check that token was provided
 	if (!token) {
@@ -61,7 +61,6 @@ wss.on("connection", (ws, req) => {
 
 	// check that the connection is an authorized user
 	const auth = db.checkTokenAuth(token);
-	let sequence = 0;
 
 	// if the connection is not authorized, close the connection
 	if (auth == false) {
@@ -71,7 +70,6 @@ wss.on("connection", (ws, req) => {
 		ws.json({
 			op: 10,
 			data: { message: "Authorized" },
-			sequence: sequence += 1,
 			type: "HELLO"
 		});
 	}
@@ -114,21 +112,6 @@ wss.on("connection", (ws, req) => {
 			return;
 		}
 
-		// set our sequence count
-		sequence += 1;
-		user.sequence = sequence;
-
-		// if sequence is not equal to the sequence count, reject the message & close the connection
-		if (message.sequence != sequence) {
-			// console.log the error
-			console.log(`Sequence mismatch for ${username}!`);
-			console.log(`Expected ${sequence}, got ${message.sequence}!`);
-
-			// close the connection
-			ws.close();
-			return;
-		}
-
 		// check if the handshake is complete
 		if (!handshakeComplete) {
 			// await falken identify payload
@@ -139,7 +122,6 @@ wss.on("connection", (ws, req) => {
 					ws.json(({
 						op: 1,
 						data: null,
-						sequence: sequence += 1,
 						type: "HEARTBEAT"
 					}));
 				}, message.data.heartbeat_interval);
@@ -161,55 +143,72 @@ wss.on("connection", (ws, req) => {
 				return;
 			}
 
-			// verify that channel is provided
-			if (!message.data.channel) {
-				console.log(`${username} requested to join a channel but didn't provide one!`);
-				ws.json(({
-					op: 9,
-					data: {
-						message: "You've sent a message without a channel!"
-					},
-					sequence: sequence += 1,
-					type: "ERROR"
-				}));
-				return;
-			}
+			// check if it's a non-zero opcode
+			if (message.op == 0) {
+				// verify that channel is provided
+				if (!message.data.channel) {
+					console.log(`${username} requested to join a channel but didn't provide one!`);
 
-			// verify that the channel exists
-			if (!db.channels.has(message.data.channel)) {
-				console.log(`${username} requested non-existant channel does not exist!`);
-				ws.json(({
-					op: 9,
-					data: {
-						message: "That channel does not exist!"
-					},
-					sequence: sequence += 1,
-					type: "ERROR"
-				}));
-				return;
-			}
+					// log data
+					console.log(message.data);
 
-			// verify that the user is actually in the channel requested
-			if (!db.channels.get(message.data.channel).users.includes(user.id)) {
-				ws.json(({
-					op: 9,
-					data: {
-						message: "You are not in that channel!"
-					},
-					sequence: sequence += 1,
-					type: "ERROR"
-				}));
-				return;
+					ws.json(({
+						op: 9,
+						data: {
+							message: "You've sent a message without a channel!"
+						},
+						type: "ERROR"
+					}));
+					return;
+				}
+
+				// verify that the channel exists
+				if (!db.channels.has(message.data.channel)) {
+					console.log(`${username} requested non-existant channel!`);
+
+					// log data
+					console.log(message.data);
+
+					ws.json({
+						op: 9,
+						data: {
+							message: "That channel does not exist!"
+						},
+						type: "ERROR"
+					});
+					return;
+				}
+
+				// verify that the user is actually in the channel requested
+				if (!db.channels.get(message.data.channel).members.has(user.id)) {
+
+					// log data
+					console.log(message.data);
+
+					ws.json(({
+						op: 9,
+						data: {
+							message: "You are not in that channel!"
+						},
+						type: "ERROR"
+					}));
+					return;
+				}
 			}
 
 			// update current sock channel
-			channel = db.channels.get(message.data.channel);
+			var channel = db.channels.get(message.data.channel);
 
 			// switch on the op code 0-9, empty blocks
 			switch (message.op) {
 				case 0:
+					console.log(message.data);
+
 					// send message
-					// channel.sendAll(message.data.message);
+					channel.sendAll({
+						content: message.data.content,
+						reply: (message.data.reply) ? message.data.reply : null
+					}, user.id);
 					break;
 				case 1:
 					// update user status / activity
@@ -221,7 +220,6 @@ wss.on("connection", (ws, req) => {
 							data: {
 								message: "Invalid status!"
 							},
-							sequence: sequence += 1,
 							type: "ERROR"
 						}));
 						return;
@@ -229,21 +227,26 @@ wss.on("connection", (ws, req) => {
 					break;
 				case 2:
 					break;
-				case 3:
+				case 3: // client wishes to identify as a human user
 					break;
-				case 4:
+				case 4: // client wishes to become a bot
+					// TODO: handle upgrade to bot
 					break;
-				case 5:
+				case 5: // client wants to send a file
+					// TODO: handle this
 					break;
-				case 6:
+				case 6: // client wants to become a teapot
+					// TODO: handle this
 					break;
-				case 7:
+				case 7: // client wants to offer itself as service
 					break;
-				case 8:
+				case 8: // client wants to request a service
 					break;
-				case 9:
+				case 9: // client thinks we had an error
+					console.error(`Client ${username} thinks we had an error!`);
 					break;
 				default:
+					console.error(`Client ${username} sent an invalid op code!`);
 					break;
 			}
 		}
@@ -259,11 +262,6 @@ wss.on("connection", (ws, req) => {
 		if (user.token) {
 			user.token = null;
 		}
-
-		// remove the user's sequence, if it exists
-		if (user.sequence) {
-			user.sequence = null;
-		}
 	});
 });
 
@@ -273,15 +271,25 @@ com.on("channelJoin", (obj) => {
 
 	// get the channel from the database
 	user = getUserById(user);
+	channel = db.getChannelById(channel);
 
 	// send the channel join message
 	user.socket.json(({
 		op: 0,
 		data: {
-			channel: db.getChannelById(channel),
+			channel: channel,
 		},
-		sequence: user.sequence += 1,
 		type: "CHANNEL_JOIN"
+	}));
+
+	// send the channel join message
+	user.socket.json(({
+		op: 0,
+		data: {
+			channel: channel,
+			content: `${user.username} has joined the channel!`
+		},
+		type: "MESSAGE"
 	}));
 });
 
@@ -298,7 +306,6 @@ com.on("channelLeave", (obj) => {
 		data: {
 			channel: db.getChannelById(channel),
 		},
-		sequence: user.sequence += 1,
 		type: "CHANNEL_LEAVE"
 	}));
 });
@@ -311,7 +318,7 @@ com.on("updateUser", (obj) => {
 	user = db.getUserById(user);
 
 	// find every channel the user is in
-	for (let channel of user.channels) { 
+	for (let channel of user.channels) {
 		// log channel name
 		console.log(channel.name);
 	}
@@ -346,11 +353,21 @@ db.addUser("admin@disilla.org", "admin", "password", {
 		db.addUserToChannel(channel.id, user.id).catch((err) => {
 			console.log(err);
 		});
-
-		console.log(users.get(user.id).channels);
+		db.addUser("me@disilla.org", "chrono", "password", {
+			ADMINISTRATOR: false,
+			MANAGE_CHANNELS: false,
+			MANAGE_MESSAGES: false
+		}).then((nuser) => {
+			db.addUserToChannel(channel.id, nuser.id).catch((err) => {
+				console.log(err);
+			});
+		}).catch((err) => {
+			console.log(err);
+		});
 	}).catch((err) => {
 		console.log(err);
 	});
 }).catch((err) => {
 	console.log(err);
 });
+
