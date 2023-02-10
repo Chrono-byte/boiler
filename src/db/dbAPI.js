@@ -16,6 +16,7 @@ const bcrypt = require("bcrypt");
 const { User, Channel } = require("../structures/structures");
 
 const { users, getUserById } = require("./users");
+
 // data structure to store channels
 const channels = new Map();
 

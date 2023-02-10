@@ -42,6 +42,9 @@ const app = express();
 // import com from api
 const com = require("./api/api").communicator;
 
+// import Message data structure
+const { Message } = require("./structures/structures");
+
 // allow CORS
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
@@ -66,6 +69,17 @@ wss.on("connection", (ws, req) => {
 	if (auth == false) {
 		return ws.close();
 	} else {
+		// see if the user is already connected
+		const user = db.getUserByToken(token);
+
+		// if the user is already connected, close the connection
+		if (user.socket) {
+			// log that the user is already connected
+			console.log(`User ${user.username} is already connected!`);
+
+			return ws.close();
+		}
+
 		// send authorized handshake
 		ws.json({
 			op: 10,
@@ -202,13 +216,19 @@ wss.on("connection", (ws, req) => {
 			// switch on the op code 0-9, empty blocks
 			switch (message.op) {
 				case 0:
-					console.log(message.data);
+					// check if the message is empty
+					if (message.data.message == "") {
+						return;
+					}
+
+					// construct the message
+					var msg = new Message(message.data.content, user.id, db.channels.get(message.data.channel));
+
+					// log the message
+					console.log(`${username} sent a message in ${channel.name}!`);
 
 					// send message
-					channel.sendAll({
-						content: message.data.content,
-						reply: (message.data.reply) ? message.data.reply : null
-					}, user.id);
+					channel.sendAll(msg);
 					break;
 				case 1:
 					// update user status / activity
@@ -287,6 +307,7 @@ com.on("channelJoin", (obj) => {
 		op: 0,
 		data: {
 			channel: channel,
+			author: "SYSTEM",
 			content: `${user.username} has joined the channel!`
 		},
 		type: "MESSAGE"

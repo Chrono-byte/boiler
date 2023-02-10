@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../traincar"
+		},
+		{
+			"path": "../hopper"
 		}
 	],
 	"settings": {}

@@ -17,41 +17,25 @@ function Banner() {
 	// log version from package.json
 	console.log("Copyright (C) 2023 Hammer Authors <chrono@disilla.org>");
 	console.log("");
-	// print notice that this program is licensed under the terms of the zlib with aknowledgement license
-	// print notice of no warranty
-	console.log("This program is licensed under the terms of the zlib with aknowledgement license.");
-	console.log("THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.");
+	console.log("This software is provided 'as-is', without any express or implied warranty. In no event will");
+	console.log("the authors be held liable for any damages arising from the use of this software.");
+	console.log("");
+	console.log("Permission is granted to anyone to use this software for any purpose, including commercial");
+	console.log("applications, and to alter it and redistribute it freely, subject to the following restrictions of the zLib with Acknowledgement license.");
+	console.log("If a copy of the zLib with Acknowledgement license was not distributed with this file, you can obtain one at https://spdx.org/licenses/zlib-acknowledgement.html.");
+	console.log("If you do not agree to these terms, do not use this software.");
 	console.log("");
 }
 
 // prompt for control commands
-const commandPrompt = async () => {
+async function commandPrompt() {
 	const response = await prompts({
 		type: "text",
-		name: "command",
-		message: "hammer> "
+		name: "value",
+		message: "Enter a command",
 	});
 
-	// shows warranty
-	if (response.command == "show w") {
-		console.log("THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.");
-	}
-
-	// shows license
-	if (response.command == "show c") {
-		console.log("This is closed-source software.");
-		console.log("You may not redistribute it.");
-		console.log("You may not modify it.");
-		console.log("There is NO WARRANTY, to the extent permitted by law.");
-	}
-
-	// exit the program
-	if (response.command == "exit") {
-		process.exit(0);
-	}
-
-	// restart the prompt
-	commandPrompt();
-};
+	return response.value;
+}
 
 module.exports = { commandPrompt, Banner };
