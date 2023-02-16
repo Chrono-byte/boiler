@@ -51,8 +51,8 @@ app.use(express.json());
 
 // listen for connections
 wss.on("connection", (ws, req) => {
-	const url = new URL(req.url, `http://${req.headers.host}`);
-	const token = url.searchParams.get("token");
+	var url = new URL(req.url, `http://${req.headers.host}`);
+	var token = url.searchParams.get("token");
 	ws.json = (data) => {
 		ws.send(JSON.stringify(data));
 	};
@@ -63,14 +63,14 @@ wss.on("connection", (ws, req) => {
 	}
 
 	// check that the connection is an authorized user
-	const auth = db.checkTokenAuth(token);
+	var auth = db.checkTokenAuth(token);
 
 	// if the connection is not authorized, close the connection
 	if (auth == false) {
 		return ws.close();
 	} else {
 		// see if the user is already connected
-		const user = db.getUserByToken(token);
+		var user = db.getUserByToken(token);
 
 		// if the user is already connected, close the connection
 		if (user.socket) {
@@ -88,7 +88,7 @@ wss.on("connection", (ws, req) => {
 		});
 	}
 
-	let username;
+	var username;
 	// get the username from the token
 	try {
 		username = jwt.verify(token, process.env.JWT_SECRET).username;
@@ -101,7 +101,7 @@ wss.on("connection", (ws, req) => {
 	console.log(`Received connection from ${username}!`);
 
 	// get the user from the database
-	const user = db.getUserByToken(token);
+	var user = db.getUserByToken(token);
 
 	// set the user's token & socket
 	user.token = token;
@@ -109,15 +109,12 @@ wss.on("connection", (ws, req) => {
 
 	console.log(`User ${username} has joined the server!`);
 	// handshake complete variable
-	let handshakeComplete = false;
+	var handshakeComplete = false;
 
 	ws.on("message", (message) => {
-		// try to parse the message, if it fails, close the connection
-		try {
-			// parse the message
+		try { // try to parse the message
 			message = JSON.parse(message);
-		} catch (err) {
-			// console.log the error
+		} catch (err) { // if the message fails to parse, close the connection
 			console.log(`Error parsing message from ${username}!`);
 			console.log(err);
 
@@ -147,7 +144,7 @@ wss.on("connection", (ws, req) => {
 				}));
 
 				// set handshake complete to true
-				handshakeComplete = true;
+				return handshakeComplete = true;
 			}
 
 			// else, close the connection
@@ -162,8 +159,6 @@ wss.on("connection", (ws, req) => {
 			// handle heartbeat
 			if (message.op == 11 && message.type == "HEARTBEAT_ACK") {
 				// we don't need to do anything here, the client is just acknowledging the heartbeat
-				// we probably should do some logic here idk
-				// return to prevent further processing
 				return;
 			}
 
@@ -172,9 +167,6 @@ wss.on("connection", (ws, req) => {
 				// verify that channel is provided
 				if (!message.data.channel) {
 					console.log(`${username} requested to join a channel but didn't provide one!`);
-
-					// log data
-					console.log(message.data);
 
 					ws.json(({
 						op: 9,
@@ -190,9 +182,6 @@ wss.on("connection", (ws, req) => {
 				if (!db.channels.has(message.data.channel)) {
 					console.log(`${username} requested non-existant channel!`);
 
-					// log data
-					console.log(message.data);
-
 					ws.json({
 						op: 9,
 						data: {
@@ -205,18 +194,15 @@ wss.on("connection", (ws, req) => {
 
 				// verify that the user is actually in the channel requested
 				if (!db.channels.get(message.data.channel).members.has(user.id)) {
+					console.log(`${username} requested to join a channel they're not in!`);
 
-					// log data
-					console.log(message.data);
-
-					ws.json(({
+					return ws.json(({
 						op: 9,
 						data: {
 							message: "You are not in that channel!"
 						},
 						type: "ERROR"
 					}));
-					return;
 				}
 			}
 
@@ -225,24 +211,26 @@ wss.on("connection", (ws, req) => {
 
 			// switch on the op code 0-9, empty blocks
 			switch (message.op) {
-				case 0:
+				case 0: // message
 					// check if the message is empty
 					if (message.data.message == "") {
-						return;
+						// return send error that the message is empty
+						return ws.json(({
+							op: 9,
+							data: {
+								message: "You can't send an empty message!"
+							},
+							type: "ERROR"
+						}));
 					}
 
 					// construct the message
 					var msg = new Message(message.data.content, user.id, db.channels.get(message.data.channel));
 
-					// log the message
-					console.log(`${username} sent a message in ${channel.name}!`);
-
 					// send message
 					channel.sendAll(msg);
 					break;
-				case 1:
-					// update user status / activity
-
+				case 1: // update user status / activity
 					// verify that the status is valid
 					if (message.data.status < 0 || message.data.status > 4) {
 						ws.json(({
@@ -254,23 +242,6 @@ wss.on("connection", (ws, req) => {
 						}));
 						return;
 					}
-					break;
-				case 2:
-					break;
-				case 3: // client wishes to identify as a human user
-					break;
-				case 4: // client wishes to become a bot
-					// TODO: handle upgrade to bot
-					break;
-				case 5: // client wants to send a file
-					// TODO: handle this
-					break;
-				case 6: // client wants to become a teapot
-					// TODO: handle this
-					break;
-				case 7: // client wants to offer itself as service
-					break;
-				case 8: // client wants to request a service
 					break;
 				case 9: // client thinks we had an error
 					console.error(`Client ${username} thinks we had an error!`);
@@ -401,4 +372,3 @@ db.addUser("admin@disilla.org", "admin", "password", {
 }).catch((err) => {
 	console.log(err);
 });
-
