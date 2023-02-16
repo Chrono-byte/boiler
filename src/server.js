@@ -59,7 +59,7 @@ wss.on("connection", (ws, req) => {
 
 	// check that token was provided
 	if (!token) {
-		ws.close();
+		return ws.close();
 	}
 
 	// check that the connection is an authorized user
@@ -122,8 +122,7 @@ wss.on("connection", (ws, req) => {
 			console.log(err);
 
 			// close the connection
-			ws.close();
-			return;
+			return ws.close();
 		}
 
 		// check if the handshake is complete
@@ -140,13 +139,24 @@ wss.on("connection", (ws, req) => {
 					}));
 				}, message.data.heartbeat_interval);
 
-				// set the handshake complete variable
+				// send the identify ack
+				ws.json(({
+					op: 12,
+					data: {},
+					type: "READY"
+				}));
+
+				// set handshake complete to true
 				handshakeComplete = true;
 			}
 
 			// else, close the connection
 			else {
-				ws.close();
+				// log that we're rejecting an improper handshake
+				console.log(`Rejected improper handshake from ${username}!`);
+
+				// close the connection
+				return ws.close();
 			}
 		} else if (handshakeComplete) {
 			// handle heartbeat
