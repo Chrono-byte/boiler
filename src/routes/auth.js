@@ -31,39 +31,31 @@ router.post("/login/email", (req, res) => {
 		return;
 	}
 
-	let user = getUserByEmail(username);
+	getUserByEmail(username).then((user) => {
+		// check if password is correct
+		if (checkPassword(password, user.hash)) {
+			// generate token
+			const token = jwt.sign({ username: user.username, id: user.id, permissions: user.permissions }, process.env.JWT_SECRET, {
+				expiresIn: "12h"
+			});
 
-	user.then((user) => {
-		// check if user exists
-		if (user) {
-			// check if password is correct
-			if (checkPassword(password, user.hash)) {
-				// generate token
-				const token = jwt.sign({ username: user.username, id: user.id, permissions: user.permissions }, process.env.JWT_SECRET, {
-					expiresIn: "12h"
-				});
+			// assign token to user
+			user.token = token;
 
-				// assign token to user
-				user.token = token;
-
-				// send token
-				res.status(200).json({ token: token, username: user.username, id: user.id });
-			} else {
-				res.status(401).json({ error: "Incorrect password" });
-			}
+			// send token
+			res.status(200).json({ token: token, username: user.username, id: user.id });
 		} else {
-			res.status(401).json({ error: "User does not exist" });
+			res.status(401).json({ error: "Incorrect password" });
 		}
 	}).catch((err) => {
 		console.log(err);
 
-		// send error
-		res.status(500).json({ error: err });
+		return res.status(401).json({ error: "User does not exist" });
 	});
 });
 
 // register endpoint
-router.post("register", (req, res) => {
+router.post("/register", (req, res) => {
 	let { email, username, password } = req.query;
 
 	// log email, username, and password
@@ -75,23 +67,20 @@ router.post("register", (req, res) => {
 		if (user) {
 			// send error
 			res.status(500).json({ error: "User already exists" });
-		} else {
-			// add user to database
-			addUser(email, username, password, {
-				ADMINISTRATOR: false,
-				MANAGE_CHANNELS: false,
-				MANAGE_MESSAGES: false
-			}).then(() => {
-				// send success
-				res.json({ success: true });
-			}).catch((err) => {
-				// send error
-				res.status(500).json({ error: err });
-			});
 		}
-	}).catch((err) => {
-		// send error
-		res.status(500).json({ error: err });
+	}).catch(() => {
+		// add user to database
+		addUser(email, username, password, {
+			ADMINISTRATOR: false,
+			MANAGE_CHANNELS: false,
+			MANAGE_MESSAGES: false
+		}).then(() => {
+			// send success
+			res.json({ success: true });
+		}).catch((err) => {
+			// send error
+			res.status(500).json({ error: err });
+		});
 	});
 });
 
@@ -116,10 +105,14 @@ const auth = (req, res, next) => {
 		next();
 	} else {
 		// check if the route is for the API status endpoint
-		if (req.url === "/") {
+		if (req.url === "/" || req.url === "/auth/login/email" || req.url === "/auth/register") {
 			// allow access to /api/ routes
 			next();
 		} else {
+			// log error
+			console.log("Not authenticated.");
+
+			// send error
 			res.status(401).json({ error: "Not authenticated." });
 		}
 	}

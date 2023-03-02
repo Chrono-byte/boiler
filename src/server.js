@@ -32,18 +32,18 @@ const { Banner } = require("./cmd");
 const port = process.argv[2] || 8080;
 
 // internal routers
-const auth = require("./auth/auth").router;
-const api = require("./api/api").router;
+const auth = require("./routes/auth").router;
+const api = require("./routes/api").router;
 
 // create a new websocket server
 const wss = new Server({ port: port });
 const app = express();
 
 // import com from api
-const com = require("./api/api").communicator;
+const com = require("./routes/api").communicator;
 
-// import Message data structure
-const { Message } = require("./structures/structures");
+// import message handler
+const { messageHandler } = require("./socket");
 
 // allow CORS
 app.use(cors({ origin: true, credentials: true }));
@@ -53,6 +53,8 @@ app.use(express.json());
 wss.on("connection", (ws, req) => {
 	var url = new URL(req.url, `http://${req.headers.host}`);
 	var token = url.searchParams.get("token");
+
+	// add json helper function
 	ws.json = (data) => {
 		ws.send(JSON.stringify(data));
 	};
@@ -70,7 +72,7 @@ wss.on("connection", (ws, req) => {
 		return ws.close();
 	} else {
 		// see if the user is already connected
-		var user = db.getUserByToken(token);
+		let user = db.getUserByToken(token);
 
 		// if the user is already connected, close the connection
 		if (user.socket) {
@@ -93,164 +95,27 @@ wss.on("connection", (ws, req) => {
 	try {
 		username = jwt.verify(token, process.env.JWT_SECRET).username;
 	} catch (err) {
-		// set username to "Unknown"
-		username = "Unknown";
+		// This should never happen, as the username should always be contained in the token.
+		// Just in case, we'll set the username to "Hackerman" if it fails to verify.
+		username = "Hackerman";
 	}
 
 	// console.log that we've received a connection
 	console.log(`Received connection from ${username}!`);
 
 	// get the user from the database
-	var user = db.getUserByToken(token);
+	let user = db.getUserByToken(token);
 
 	// set the user's token & socket
 	user.token = token;
 	user.socket = ws;
 
-	console.log(`User ${username} has joined the server!`);
+	console.log(`${username} has joined the server!`);
 	// handshake complete variable
 	var handshakeComplete = false;
 
-	ws.on("message", (message) => {
-		try { // try to parse the message
-			message = JSON.parse(message);
-		} catch (err) { // if the message fails to parse, close the connection
-			console.log(`Error parsing message from ${username}!`);
-			console.log(err);
-
-			// close the connection
-			return ws.close();
-		}
-
-		// check if the handshake is complete
-		if (!handshakeComplete) {
-			// await falken identify payload
-			if (message.op == 11 && message.type == "IDENTIFY") {
-				// set the heartbeat interval
-				setInterval(() => {
-					// send the heartbeat
-					ws.json(({
-						op: 1,
-						data: null,
-						type: "HEARTBEAT"
-					}));
-				}, message.data.heartbeat_interval);
-
-				// send the identify ack
-				ws.json(({
-					op: 12,
-					data: {},
-					type: "READY"
-				}));
-
-				// set handshake complete to true
-				return handshakeComplete = true;
-			}
-
-			// else, close the connection
-			else {
-				// log that we're rejecting an improper handshake
-				console.log(`Rejected improper handshake from ${username}!`);
-
-				// close the connection
-				return ws.close();
-			}
-		} else if (handshakeComplete) {
-			// handle heartbeat
-			if (message.op == 11 && message.type == "HEARTBEAT_ACK") {
-				// we don't need to do anything here, the client is just acknowledging the heartbeat
-				return;
-			}
-
-			// check if it's a non-zero opcode
-			if (message.op == 0) {
-				// verify that channel is provided
-				if (!message.data.channel) {
-					console.log(`${username} requested to join a channel but didn't provide one!`);
-
-					ws.json(({
-						op: 9,
-						data: {
-							message: "You've sent a message without a channel!"
-						},
-						type: "ERROR"
-					}));
-					return;
-				}
-
-				// verify that the channel exists
-				if (!db.channels.has(message.data.channel)) {
-					console.log(`${username} requested non-existant channel!`);
-
-					ws.json({
-						op: 9,
-						data: {
-							message: "That channel does not exist!"
-						},
-						type: "ERROR"
-					});
-					return;
-				}
-
-				// verify that the user is actually in the channel requested
-				if (!db.channels.get(message.data.channel).members.has(user.id)) {
-					console.log(`${username} requested to join a channel they're not in!`);
-
-					return ws.json(({
-						op: 9,
-						data: {
-							message: "You are not in that channel!"
-						},
-						type: "ERROR"
-					}));
-				}
-			}
-
-			// update current sock channel
-			var channel = db.channels.get(message.data.channel);
-
-			// switch on the op code 0-9, empty blocks
-			switch (message.op) {
-				case 0: // message
-					// check if the message is empty
-					if (message.data.message == "") {
-						// return send error that the message is empty
-						return ws.json(({
-							op: 9,
-							data: {
-								message: "You can't send an empty message!"
-							},
-							type: "ERROR"
-						}));
-					}
-
-					// construct the message
-					var msg = new Message(message.data.content, user.id, db.channels.get(message.data.channel));
-
-					// send message
-					channel.sendAll(msg);
-					break;
-				case 1: // update user status / activity
-					// verify that the status is valid
-					if (message.data.status < 0 || message.data.status > 4) {
-						ws.json(({
-							op: 9,
-							data: {
-								message: "Invalid status!"
-							},
-							type: "ERROR"
-						}));
-						return;
-					}
-					break;
-				case 9: // client thinks we had an error
-					console.error(`Client ${username} thinks we had an error!`);
-					break;
-				default:
-					console.error(`Client ${username} sent an invalid op code!`);
-					break;
-			}
-		}
+	ws.on("message", function (message) {
+		messageHandler(message, { ws, user, handshakeComplete }, { jwt, db });
 	});
 
 	ws.on("close", () => {
@@ -282,17 +147,6 @@ com.on("channelJoin", (obj) => {
 		},
 		type: "CHANNEL_JOIN"
 	}));
-
-	// send the channel join message
-	user.socket.json(({
-		op: 0,
-		data: {
-			channel: channel,
-			author: "SYSTEM",
-			content: `${user.username} has joined the channel!`
-		},
-		type: "MESSAGE"
-	}));
 });
 
 // channel leave event
@@ -319,10 +173,17 @@ com.on("updateUser", (obj) => {
 	// get the user from the database
 	user = db.getUserById(user);
 
-	// find every channel the user is in
-	for (let channel of user.channels) {
-		// log channel name
-		console.log(channel.name);
+	// for every connected user, send the updated user
+	for (let u of user) {
+		if (u.socket) {
+			u.socket.json({
+				op: 0,
+				data: {
+					user: user
+				},
+				type: "USER_UPDATE"
+			});
+		}
 	}
 });
 

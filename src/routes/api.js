@@ -13,7 +13,7 @@ require("dotenv").config();
 const npm_package_version = require("../../package.json").version;
 
 // import authentication middleware
-const { auth } = require("../auth/auth");
+const { auth } = require("./auth");
 
 // import database functions
 const { getChannelById, getChannelByName, createChannel, deleteChannel, kickUserFromChannel, addUserToChannel } = require("../db/dbAPI");
