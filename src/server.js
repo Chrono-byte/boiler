@@ -110,15 +110,15 @@ wss.on("connection", (ws, req) => {
 	user.token = token;
 	user.socket = ws;
 
-	console.log(`${username} has joined the server!`);
+	console.log(`${username} has joined the server.`);
 	// handshake complete variable
 	var handshakeComplete = false;
 
-	ws.on("message", function (message) {
-		messageHandler(message, { ws, user, handshakeComplete }, { jwt, db });
-	});
+	ws.on("message", message => messageHandler(message, { ws, user, handshakeComplete }, { jwt, db }));
 
 	ws.on("close", () => {
+		console.log(`${username} has left the server.`);
+
 		// remove the user's socket, if it exists
 		if (user.socket) {
 			user.socket = null;
