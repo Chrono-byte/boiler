@@ -64,45 +64,35 @@ function messageHandler(message, context, mods) {
 
 			var channels = new Map();
 			// how to iterate over a map
-			for (let [key, value] of db.channels) {
-				channel = value;
-
+			for (let [, channel] of db.channels) {
 				// check if the user is in the channel
 				if (value.members.has(user.id)) {
-					var x = {
+					// add it to our channels map
+					channels.set(channel.id, {
 						name: channel.name,
 						id: channel.id,
 						description: channel.description,
 						owner: channel.owner,
-					};
-
-					// add it to our channels map
-					channels.set(channel.id, x);
+					});
 				} else return;
 			}
 
 			var usersTo = new Map();
 
 			// iterate over the users
-			for (let [key, value] of users) {
-				user = value;
-
-				var x = {
+			for (let [, user] of users) {
+				// add it to our users map
+				usersTo.set(user.id, {
 					username: user.username,
 					id: user.id,
 					avatar: user.avatar,
 					permissions: user.permissions,
-				};
-
-				// add it to our users map
-				usersTo.set(user.id, x);
+				});
 			}
 
 			// convert our map to an array of only the values
 			channels = Array.from(channels.values());
 			usersTo = Array.from(usersTo.values());
-
-			console.log(usersTo);
 
 			// send the identify ack
 			ws.json({
