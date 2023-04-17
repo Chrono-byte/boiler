@@ -57,7 +57,6 @@ router.get("/", (req, res) => {
 			},
 			"authors": [
 				"Chrono <chrono@disilla.org>",
-				// "tehZevo"
 			]
 		},
 
@@ -68,9 +67,6 @@ router.get("/", (req, res) => {
 	status.authenticated = req.authenticated;
 
 	res.json(status);
-
-	// send dummy data
-	// res.status(200).send("Hello World!");
 });
 
 // get channel endpoint

@@ -1,31 +1,35 @@
 const { Message } = require("./structures/structures");
+const db = require("./db/dbAPI");
+const { users } = require("./db/users");
 
 function messageHandler(message, context, mods) {
 	var { ws, user, handshakeComplete } = context;
 	var { username } = user;
 
 	// db, jwt
-	var { db, jwt } = mods;
+	var { jwt } = mods;
 
 	// check if the message is valid, if not, return.
-	if(!message) return;
+	if (!message) return;
 
-	try { // try to parse the message
+	try {
+		// try to parse the message
 		message = JSON.parse(message);
-	} catch (err) { // if the message fails to parse, close the connection
+	} catch (err) {
+		// if the message fails to parse, close the connection
 		console.log(`${username} sent invalid JSON, closing connection.`);
 
 		// log the "message"
 		console.log(message);
 
 		// send the error control command to the client
-		ws.json(({
+		ws.json({
 			op: 9,
 			data: {
-				message: "You've sent invalid JSON!"
+				message: "You've sent invalid JSON!",
 			},
-			type: "ERROR"
-		}));
+			type: "ERROR",
+		});
 
 		// close the connection
 		return ws.close();
@@ -38,7 +42,9 @@ function messageHandler(message, context, mods) {
 			if (message.data.token) {
 				// check that the token is valid
 				if (!db.checkTokenAuth(message.data.token)) {
-					console.log(`Rejected improper handshake from ${username}!`);
+					console.log(
+						`Rejected improper handshake from ${username}!`
+					);
 
 					// close the connection
 					return ws.close();
@@ -46,24 +52,71 @@ function messageHandler(message, context, mods) {
 
 				// get the username from the token
 				try {
-					username = jwt.verify(message.data.token, process.env.JWT_SECRET).username;
+					username = jwt.verify(
+						message.data.token,
+						process.env.JWT_SECRET
+					).username;
 				} catch (err) {
 					// set username to "Unknown"
 					username = "Unknown";
 				}
-
-
 			}
 
+			var channels = new Map();
+			// how to iterate over a map
+			for (let [key, value] of db.channels) {
+				channel = value;
+
+				// check if the user is in the channel
+				if (value.members.has(user.id)) {
+					var x = {
+						name: channel.name,
+						id: channel.id,
+						description: channel.description,
+						owner: channel.owner,
+					};
+
+					// add it to our channels map
+					channels.set(channel.id, x);
+				} else return;
+			}
+
+			var usersTo = new Map();
+
+			// iterate over the users
+			for (let [key, value] of users) {
+				user = value;
+
+				var x = {
+					username: user.username,
+					id: user.id,
+					avatar: user.avatar,
+					permissions: user.permissions,
+				};
+
+				// add it to our users map
+				usersTo.set(user.id, x);
+			}
+
+			// convert our map to an array of only the values
+			channels = Array.from(channels.values());
+			usersTo = Array.from(usersTo.values());
+
+			console.log(usersTo);
+
 			// send the identify ack
-			ws.json(({
+			ws.json({
 				op: 12,
-				data: {},
-				type: "READY"
-			}));
+				data: {
+					message: "Identified",
+					channels: JSON.stringify(channels),
+					users: JSON.stringify(usersTo)
+				},
+				type: "READY",
+			});
 
 			// set handshake complete to true
-			return handshakeComplete = true;
+			return (handshakeComplete = true);
 		}
 
 		// else, close the connection
@@ -85,15 +138,17 @@ function messageHandler(message, context, mods) {
 		if (message.op == 0) {
 			// verify that channel is provided
 			if (!message.data.channel) {
-				console.log(`${username} requested to join a channel but didn't provide one!`);
+				console.log(
+					`${username} requested to join a channel but didn't provide one!`
+				);
 
-				ws.json(({
+				ws.json({
 					op: 9,
 					data: {
-						message: "You've sent a message without a channel!"
+						message: "You've sent a message without a channel!",
 					},
-					type: "ERROR"
-				}));
+					type: "ERROR",
+				});
 				return;
 			}
 
@@ -104,24 +159,26 @@ function messageHandler(message, context, mods) {
 				ws.json({
 					op: 9,
 					data: {
-						message: "That channel does not exist!"
+						message: "That channel does not exist!",
 					},
-					type: "ERROR"
+					type: "ERROR",
 				});
 				return;
 			}
 
 			// verify that the user is actually in the channel requested
 			if (!db.channels.get(message.data.channel).members.has(user.id)) {
-				console.log(`${username} requested to join a channel they're not in!`);
+				console.log(
+					`${username} requested to join a channel they're not in!`
+				);
 
-				return ws.json(({
+				return ws.json({
 					op: 9,
 					data: {
-						message: "You are not in that channel!"
+						message: "You are not in that channel!",
 					},
-					type: "ERROR"
-				}));
+					type: "ERROR",
+				});
 			}
 		}
 
@@ -134,17 +191,21 @@ function messageHandler(message, context, mods) {
 				// check if the message is empty
 				if (message.data.message == "") {
 					// return send error that the message is empty
-					return ws.json(({
+					return ws.json({
 						op: 9,
 						data: {
-							message: "You can't send an empty message!"
+							message: "You can't send an empty message!",
 						},
-						type: "ERROR"
-					}));
+						type: "ERROR",
+					});
 				}
 
 				// construct the message
-				var msg = new Message(message.data.content, user.id, db.channels.get(message.data.channel));
+				var msg = new Message(
+					message.data.content,
+					user.id,
+					db.channels.get(message.data.channel)
+				);
 
 				// send message
 				channel.sendAll(msg);
@@ -152,13 +213,13 @@ function messageHandler(message, context, mods) {
 			case 1: // update user status / activity
 				// verify that the status is valid
 				if (message.data.status < 0 || message.data.status > 4) {
-					ws.json(({
+					ws.json({
 						op: 9,
 						data: {
-							message: "Invalid status!"
+							message: "Invalid status!",
 						},
-						type: "ERROR"
-					}));
+						type: "ERROR",
+					});
 					return;
 				}
 				break;

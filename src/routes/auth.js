@@ -87,8 +87,6 @@ router.post("/register", (req, res) => {
 // authentication middleware, checks if user is logged in & redirects to login page if not, otherwise continues to next middleware
 const auth = (req, res, next) => {
 	// get token from request
-	// const url = new URL(req.url, `http://${req.headers.host}`);
-	// const token = url.searchParams.get("token");
 	const token = req.headers.authorization;
 
 	// console.log(req.headers.authorization);

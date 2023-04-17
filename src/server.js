@@ -96,7 +96,8 @@ wss.on("connection", (ws, req) => {
 		username = jwt.verify(token, process.env.JWT_SECRET).username;
 	} catch (err) {
 		// This should never happen, as the username should always be contained in the token.
-		// Just in case, we'll set the username to "Hackerman" if it fails to verify.
+		// in the event it does, we'll set the username to "Hackerman" if it fails to verify.
+		// if this did happen, the token would have to be created by us, set as the user's token, and then sent to the client.
 		username = "Hackerman";
 	}
 
@@ -135,6 +136,8 @@ wss.on("connection", (ws, req) => {
 com.on("channelJoin", (obj) => {
 	let { user, channel } = obj;
 
+	if(!user.socket) return;
+
 	// get the channel from the database
 	user = getUserById(user);
 	channel = db.getChannelById(channel);
@@ -152,6 +155,8 @@ com.on("channelJoin", (obj) => {
 // channel leave event
 com.on("channelLeave", (obj) => {
 	let { user, channel } = obj;
+
+	if(!user.socket) return;
 
 	// get the channel from the database
 	user = db.getUserById(user);
@@ -172,6 +177,8 @@ com.on("updateUser", (obj) => {
 
 	// get the user from the database
 	user = db.getUserById(user);
+
+	if(!user.socket) return;
 
 	// for every connected user, send the updated user
 	for (let u of user) {
@@ -213,7 +220,9 @@ db.addUser("admin@disilla.org", "admin", "password", {
 	MANAGE_MESSAGES: true
 }).then((user) => {
 	db.createChannel({ name: "general", description: "The general channel" }, user.id).then((channel) => {
-		db.addUserToChannel(channel.id, user.id).catch((err) => {
+		db.addUserToChannel(channel.id, user.id).then(() => {
+			com.emit("channelJoin", { user: user.id, channel: channel.id });
+		}).catch((err) => {
 			console.log(err);
 		});
 		db.addUser("me@disilla.org", "chrono", "password", {
