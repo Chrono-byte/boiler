@@ -112,9 +112,6 @@ function socketHandler(message, context) {
 
 			// set handshake complete to true
 			handshakeComplete = true;
-
-			// log that we've accepted the handshake
-			console.log(handshakeComplete);
 			return;
 		}
 		// else, close the connection

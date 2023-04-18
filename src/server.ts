@@ -57,7 +57,7 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // listen for connections
-wss.on("connection", (ws, req) => {
+wss.on("connection", (ws: any, req: any) => {
 	var url = new URL(req.url, `http://${req.headers.host}`);
 	var token = url.searchParams.get("token");
 

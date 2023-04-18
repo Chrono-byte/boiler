@@ -117,7 +117,7 @@ class User {
 	avatarURL: any;
 	permissions: { ADMINISTRATOR: any; MANAGE_CHANNELS: any; MANAGE_MESSAGES: any; };
 	token: any;
-	socket: any;
+	socket: any; // this should be private
 	Member: Member;
 	channels: Map<any, any>;
 	constructor(email, username, hash, permissions, id) {

@@ -5,11 +5,11 @@
   "private": true,
   "license": "zlib-acknowledgement",
   "author": "chrono <chrono@disilla.org>",
-  "main": "built/server.js",
+  "main": "src/server.ts",
   "scripts": {
     "lint": "eslint . --ext js",
     "lint:fix": "eslint . --ext js",
-    "start": "node .",
+    "start": "ts-node .",
 	"prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
     "build": "tsc"
   },
