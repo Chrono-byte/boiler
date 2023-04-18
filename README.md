@@ -2,7 +2,7 @@
 
 [![CodeFactor](https://www.codefactor.io/repository/github/hammer-institute/boiler/badge)](https://www.codefactor.io/repository/github/hammer-institute/boiler)
 
-Boiler is a chat server written in JavaScript. It is the reference implementation of Hammer. It is designed to be easy to use and ~~painful~~ *easy* to extend.
+Boiler is a chat server written in TypeScript. It is the reference implementation of Hammer. It is designed to be easy to use and ~~painful~~ *easy* to extend.
 
 ## Installation
 
