@@ -223,16 +223,19 @@ let listener = app.listen(port + 1, function () {
 	// print the banner
 	Banner();
 
-	// print the server info
-	console.log(
-		`Gateway listening on port http://localhost:${wss.address().port}`
-	);
-
 	// type of listener.address() is AddressInfo
 	var port = listener.address() as AddressInfo;
 	var ePort = port.port;
 
-	console.log("Server API is listening on port http://localhost:" + ePort);
+	var wPortT = wss.address() as AddressInfo;
+	var wPort: number = wPortT.port;
+
+	// print the server info
+	console.log(
+		`Gateway listening on ws://localhost:${wPort}`
+	);
+
+	console.log("Server API is listening on http://localhost:" + ePort);
 });
 
 addUser("admin@disilla.org", "admin", "password", {

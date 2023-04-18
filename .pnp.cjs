@@ -33,6 +33,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jsonwebtoken", "npm:9.0.1"],\
             ["@types/node", "npm:18.15.11"],\
             ["@types/uuid", "npm:9.0.1"],\
+            ["@types/ws", "npm:8.5.4"],\
             ["bcrypt", "npm:5.1.0"],\
             ["cors", "npm:2.8.5"],\
             ["dotenv", "npm:16.0.3"],\
@@ -425,6 +426,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["@types/ws", [\
+        ["npm:8.5.4", {\
+          "packageLocation": "./.yarn/cache/@types-ws-npm-8.5.4-c0237574ef-fefbad20d2.zip/node_modules/@types/ws/",\
+          "packageDependencies": [\
+            ["@types/ws", "npm:8.5.4"],\
+            ["@types/node", "npm:18.15.11"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["abbrev", [\
         ["npm:1.1.1", {\
           "packageLocation": "./.yarn/cache/abbrev-npm-1.1.1-3659247eab-a4a97ec07d.zip/node_modules/abbrev/",\
@@ -657,6 +668,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jsonwebtoken", "npm:9.0.1"],\
             ["@types/node", "npm:18.15.11"],\
             ["@types/uuid", "npm:9.0.1"],\
+            ["@types/ws", "npm:8.5.4"],\
             ["bcrypt", "npm:5.1.0"],\
             ["cors", "npm:2.8.5"],\
             ["dotenv", "npm:16.0.3"],\

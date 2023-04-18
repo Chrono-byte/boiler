@@ -10,7 +10,7 @@
     "lint": "eslint . --ext js",
     "lint:fix": "eslint . --ext js",
     "start": "ts-node .",
-	"prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
+    "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
     "build": "tsc"
   },
   "dependencies": {
@@ -28,6 +28,7 @@
     "@types/jsonwebtoken": "^9.0.1",
     "@types/node": "^18.15.11",
     "@types/uuid": "^9.0.1",
+    "@types/ws": "^8.5.4",
     "eslint": "^8.38.0",
     "eslint-plugin-json": "^3.1.0",
     "prettier": "^2.8.7",

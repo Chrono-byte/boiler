@@ -119,7 +119,7 @@ class User {
 	token: any;
 	socket: any; // this should be private
 	Member: Member;
-	channels: Map<any, any>;
+	channels: Map<string, Channel>;
 	constructor(email, username, hash, permissions, id) {
 		// account auth info
 		this.email = email;
