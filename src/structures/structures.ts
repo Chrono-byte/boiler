@@ -4,10 +4,10 @@
  *
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
-import { getUserById } from "../db/users";
-import generateSnowflake from "../util/snowflake";
+import { getUserById } from "../db/users.ts";
+import generateSnowflake from "../util/snowflake.ts";
 
-function testUsername(username, bypass) {
+function testUsername(username: string, bypass: boolean) {
 	// Check that username is a string
 	if (typeof username !== "string") {
 		return false;
@@ -57,12 +57,12 @@ function testUsername(username, bypass) {
 
 class Message {
 	content: string;
-	author: User;
+	author: User | Member;
 	channel: Channel;
 	createdAt: Date;
 	reply: boolean;
 	id: string;
-	constructor(content, author, channel) {
+	constructor(content: string, author: string, channel: Channel) {
 		// Check that required parameters are provided
 		if (!content || !author || !channel) {
 			throw new Error(
@@ -95,10 +95,14 @@ class PermissionsObject {
 	ADMINISTRATOR: boolean;
 	MANAGE_CHANNELS: boolean;
 	MANAGE_MESSAGES: boolean;
-	constructor(ADMINISTRATOR, MANAGE_CHANNELS, MANAGE_MESSAGES) {
+	constructor(
+		ADMINISTRATOR: boolean,
+		MANAGE_CHANNELS: boolean,
+		MANAGE_MESSAGES: boolean
+	) {
 		this.ADMINISTRATOR = ADMINISTRATOR;
 		this.MANAGE_CHANNELS = MANAGE_CHANNELS;
-		this.MANAGE_MESSAGES;
+		this.MANAGE_MESSAGES = MANAGE_MESSAGES;
 	}
 }
 
@@ -108,7 +112,7 @@ class Member {
 	joinedAt: Date;
 	avatarURL: string;
 	permissions: PermissionsObject;
-	constructor(user) {
+	constructor(user: User) {
 		// Identity
 		this.username = user.username;
 		this.id = user.id;
@@ -130,14 +134,20 @@ class User {
 	id: string;
 	joinedAt: Date;
 	avatarURL: string;
-	permissions: PermissionsObject
+	permissions: PermissionsObject;
 	token: string;
 	// This needs to be changed to have our custom .json middleware socket
-	socket: WebSocket & { json: (data: unknown) => void }
+	socket: WebSocket & { json: (data: unknown) => void };
 	Member: Member;
 	channels: Map<string, Channel>;
-	handshakeComplete: boolean
-	constructor(email, username, hash, permissions, id) {
+	handshakeComplete: boolean;
+	constructor(
+		email: string,
+		username: string,
+		hash: string,
+		permissions: PermissionsObject,
+		id: string
+	) {
 		// Account auth info
 		this.email = email as string;
 		this.hash = hash as string;
@@ -183,7 +193,7 @@ class User {
 		throw new Error("Not implemented");
 	}
 
-	setUsername(username, bypass) {
+	setUsername(username: string, bypass: boolean) {
 		const yes = testUsername(username, bypass);
 
 		if (!yes) {
@@ -193,7 +203,7 @@ class User {
 		this.username = username;
 	}
 
-	setAvatarURL(url) {
+	setAvatarURL(url: string) {
 		// Regex to check if url is valid
 		const regex = /^(http|https):\/\/[^ "]+$/;
 
@@ -215,13 +225,13 @@ class User {
 }
 
 class Channel {
-	owner: User;
+	owner: Member;
 	id: string;
 	name: string;
 	description: string;
 	members: Map<string, Member>;
 	messages: Map<string, Message>;
-	constructor(name, description, id, owner) {
+	constructor(name: string, description: string, id: string, owner: Member) {
 		// Channel name and description
 		this.name = name;
 		this.description = description;
@@ -236,7 +246,7 @@ class Channel {
 		this.messages = new Map<string, Message>();
 	}
 
-	rename(name, user) {
+	rename(name: string, user: { permissions: { MANAGE_CHANNELS: boolean } }) {
 		// Check that the user has permission to rename the channel
 		if (!user.permissions.MANAGE_CHANNELS) {
 			throw new Error(
@@ -264,7 +274,10 @@ class Channel {
 		this.name = name;
 	}
 
-	setDescription(description, user) {
+	setDescription(
+		description: string,
+		user: { permissions: { MANAGE_CHANNELS: boolean } }
+	) {
 		// Check that the user has permission to rename the channel
 		if (!user.permissions.MANAGE_CHANNELS) {
 			throw new Error(
@@ -287,7 +300,7 @@ class Channel {
 		this.description = description;
 	}
 
-	addMember(member) {
+	addMember(member: Member) {
 		// Check that the member is not already in the channel
 		if (this.members.has(member.id)) {
 			console.error("Member is already in this channel.");
@@ -297,7 +310,7 @@ class Channel {
 		this.members.set(member.id, member);
 	}
 
-	removeMember(member) {
+	removeMember(member: { id: string }) {
 		// Check that the member is in the channel
 		if (!this.members.has(member.id)) {
 			throw new Error("Member is not in this channel.");
@@ -306,11 +319,11 @@ class Channel {
 		this.members.delete(member.id);
 	}
 
-	setOwner(member) {
+	setOwner(member: User) {
 		this.owner = member;
 	}
 
-	async sendAll(message, from) {
+	async sendAll(message: Message, from: string) {
 		// Check if from is set
 		if (!from) {
 			from = message.author.id;
@@ -352,7 +365,10 @@ class Channel {
 		}
 	}
 
-	deleteMessage(message, user) {
+	deleteMessage(
+		message: Message | undefined,
+		user: { permissions: { MANAGE_MESSAGES: boolean }; id: string }
+	) {
 		// Check that message exists
 		if (!this.messages.has(message.id)) {
 			throw new Error("Message does not exist.");
@@ -378,7 +394,7 @@ class Channel {
 		this.messages.delete(message.id);
 	}
 
-	async broadcast(message) {
+	async broadcast(message: { content: string }) {
 		for (const [, member] of this.members) {
 			const user = await getUserById(member.id);
 			if (member.id !== this.owner.id) {
@@ -392,4 +408,4 @@ class Channel {
 	}
 }
 
-export { User, Channel, Message, testUsername };
+export { User, Channel, Message, testUsername, PermissionsObject };

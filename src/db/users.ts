@@ -4,13 +4,13 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-import { type User } from "../structures/structures";
+import { type User } from "../structures/structures.ts";
 
 // Users, Map<string, User>
 const users = new Map<string, User>();
 
 // Get user by username function, returns a User object, or null if user does not exist
-async function getUserByEmail(email): Promise<User> {
+function getUserByEmail(email: string): Promise<User> {
 	const promise1 = new Promise((resolve, reject) => {
 		for (const [, user] of users) {
 			if (user.email == email) {
@@ -26,7 +26,7 @@ async function getUserByEmail(email): Promise<User> {
 }
 
 // Get user by id function, returns a User object
-async function getUserById(id): Promise<User> {
+function getUserById(id: string): Promise<User> {
 	const promise1 = new Promise((resolve, reject) => {
 		for (const [, user] of users) {
 			if (user.id == id) {

@@ -5,13 +5,13 @@
  */
 
 // import internal deps
-import generateSnowflake from "../util/snowflake";
+import generateSnowflake from "../util/snowflake.ts";
 
 // Import external deps
 
 // import internal deps
-import { User, Channel } from "../structures/structures";
-import { users, getUserById } from "./users";
+import { User, Channel, PermissionsObject } from "../structures/structures.ts";
+import { users, getUserById } from "./users.ts";
 import bcrypt from "bcrypt";
 
 // Data structure to store channels
@@ -40,7 +40,12 @@ function getChannelByName(name) {
 }
 
 // Add user to database
-async function addUser(email, username, password, permissions) {
+function addUser(
+	email: string,
+	username: string,
+	password: string,
+	permissions: PermissionsObject
+) {
 	// Create promise
 	const promise1 = new Promise((resolve, reject) => {
 		// Hash password
@@ -228,7 +233,7 @@ async function kickUserFromChannel(id, user) {
 }
 
 // Get user by token function
-function getUserByToken(token) {
+function getUserByToken(token: string): User | null {
 	for (const user of users.values()) {
 		if (user.token == token) {
 			return user;

@@ -1,13 +1,10 @@
-// Create event emitter
-import { EventEmitter } from "node:events";
-
 /*
  * Hammer - A simple WebSocket-based chat server & client written in JavaScript.
  *
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-// net-related imports
+import { EventEmitter } from "node:events";
 import express from "express";
 
 // dotenv
@@ -15,7 +12,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // get version from version.ts
-import { LIB_VERSION as npm_package_version } from "../version";
+import { LIB_VERSION as npm_package_version } from "../version.ts";
 
 // Import database functions
 import {
@@ -25,10 +22,10 @@ import {
 	deleteChannel,
 	kickUserFromChannel,
 	addUserToChannel,
-} from "../db/dbAPI";
-import { getUserById } from "../db/users";
-import { auth } from "./auth";
-import { User } from "../structures/structures";
+} from "../db/dbAPI.ts";
+import { getUserById } from "../db/users.ts";
+import { auth } from "./auth.ts";
+import { User } from "../structures/structures.ts";
 
 // Create router
 const router = express.Router();

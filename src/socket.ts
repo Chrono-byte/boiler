@@ -1,9 +1,13 @@
-import { Message, User } from "./structures/structures";
-import channels, { checkTokenAuth } from "./db/dbAPI";
-import { users } from "./db/users";
+import { Message, User } from "./structures/structures.ts";
+import channels, { checkTokenAuth } from "./db/dbAPI.ts";
+import { users } from "./db/users.ts";
 import jwt from "jsonwebtoken";
 
-function socketHandler(message, context) {
+function socketHandler(
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	message: any,
+	context: { user: User; ws: WebSocket & { json: (data: unknown) => void } }
+) {
 	const user = context.user as User;
 	const ws = context.ws as WebSocket & { json: (data: unknown) => void };
 	let { username } = user;
@@ -13,8 +17,9 @@ function socketHandler(message, context) {
 	}
 
 	try {
-		// Try to parse the message
-		message = JSON.parse(message);
+		if (typeof message === "string")
+			// Try to parse the message as JSON
+			message = JSON.parse(message) as { type: string; op: number };
 	} catch {
 		// If the message fails to parse, close the connection
 		console.log(`${username} sent invalid JSON, closing connection.`);
@@ -34,6 +39,9 @@ function socketHandler(message, context) {
 		// Close the connection
 		return ws.close();
 	}
+
+	// eslint-disable-next-line prefer-const
+	let channel = channels.get(message.data.channel);
 
 	// Check if the handshake is complete
 	switch (user.handshakeComplete) {
@@ -192,10 +200,6 @@ function socketHandler(message, context) {
 					});
 				}
 			}
-
-			// Update current sock channel
-			// eslint-disable-next-line no-var, no-case-declarations
-			var channel = channels.get(message.data.channel);
 
 			// Switch on the op code 0-9, empty blocks
 			switch (message.op) {

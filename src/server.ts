@@ -1,39 +1,36 @@
-#!/usr/bin/env node
 /*
  * Hammer - A simple WebSocket-based chat server & client written in JavaScript.
  *
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-// Servers
+// Utilities
 import path from "node:path";
 import { type AddressInfo } from "node:net";
-import { addUserToChannel, addUser, createChannel } from "./db/dbAPI";
 
-// Utilities
-
-// Dotenv
-
-// Import external deps
-import { getUserById, users } from "./db/users";
-import Banner from "./cmd";
-
-// Internal routers & event handlers
-import { auth } from "./routes/auth";
-import { api, com } from "./routes/api";
-
-// Import database helpers
-import { checkTokenAuth, getUserByToken, getChannelById } from "./db/dbAPI";
-
-// Import message handler
-import socketHandler from "./socket";
-import { type Channel, type User } from "./structures/structures";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import cors from "cors";
 import express from "express";
 import { Server } from "ws";
 import { EventEmitter } from "node:stream";
+import http from "node:http";
+
+// Import external deps
+import { getUserById, users } from "./db/users.ts";
+import Banner from "./cmd.ts";
+import { auth } from "./routes/auth.ts";
+import { api, com } from "./routes/api.ts";
+import {
+	checkTokenAuth,
+	getUserByToken,
+	getChannelById,
+	addUserToChannel,
+	addUser,
+	createChannel,
+} from "./db/dbAPI.ts";
+import socketHandler from "./socket.ts";
+import { type Channel, type User } from "./structures/structures.ts";
 
 // check that we're running Node.js 18 or higher
 if (Number.parseInt(process.versions.node.split(".")[0]) < 18) {
@@ -59,7 +56,7 @@ wss.on(
 	"connection",
 	(
 		ws: WebSocket & { json: (data: unknown) => void } & EventEmitter,
-		request
+		request: http.IncomingMessage
 	) => {
 		const url = new URL(request.url, `http://${request.headers.host}`);
 		const token = url.searchParams.get("token");
