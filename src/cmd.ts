@@ -6,12 +6,12 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-const prompts = require("prompts");
+import { LIB_VERSION } from './version';
 
 function Banner() {
 	// print the banner
 	// print boiler server branding
-	console.log(`Boiler - Version ${require("../package.json").version}`);
+	console.log(`Boiler - Version ${LIB_VERSION}`);
 	// print hammer branding
 	console.log("Hammer - A simple WebSocket-based chat server & client.");
 	// log version from package.json
@@ -27,15 +27,4 @@ function Banner() {
 	console.log("");
 }
 
-// prompt for control commands
-async function commandPrompt() {
-	const response = await prompts({
-		type: "text",
-		name: "value",
-		message: "Enter a command",
-	});
-
-	return response.value;
-}
-
-module.exports = { commandPrompt, Banner };
+export default Banner;

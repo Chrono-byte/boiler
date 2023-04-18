@@ -5,8 +5,8 @@
  *
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
-const { getUserById } = require("../db/users");
-const { generateSnowflake } = require("../util/snowflake");
+import { getUserById } from "../db/users";
+import generateSnowflake from "../util/snowflake";
 
 function testUsername(username, bypass) {
 	// check that username is a string
@@ -50,6 +50,12 @@ function testUsername(username, bypass) {
 }
 
 class Message {
+	content: string;
+	author: any;
+	channel: any;
+	createdAt: Date;
+	reply: boolean;
+	id: string;
 	constructor(content, author, channel) {
 		// check that required parameters are provided
 		if (!content || !author || !channel) throw new Error("Missing required parameters for Message constructor. (content, author, channel)");
@@ -82,6 +88,11 @@ class HammerObject {
 }
 
 class Member {
+	username: any;
+	id: any;
+	joinedAt: any;
+	avatarURL: any;
+	permissions: any;
 	constructor(user) {
 		// identity
 		this.username = user.username;
@@ -97,6 +108,18 @@ class Member {
 }
 
 class User {
+	email: string;
+	hash: any;
+	salt: any;
+	username: string;
+	id: any;
+	joinedAt: Date;
+	avatarURL: any;
+	permissions: { ADMINISTRATOR: any; MANAGE_CHANNELS: any; MANAGE_MESSAGES: any; };
+	token: any;
+	socket: any;
+	Member: Member;
+	channels: Map<any, any>;
 	constructor(email, username, hash, permissions, id) {
 		// account auth info
 		this.email = email;
@@ -106,7 +129,7 @@ class User {
 		// identity
 
 		// check that username is valid
-		if (!testUsername(username)) {
+		if (!testUsername(username, false)) {
 			throw new Error("Invalid username");
 		}
 
@@ -171,6 +194,12 @@ class User {
 }
 
 class Channel extends HammerObject {
+	owner: User;
+	id: any;
+	name: any;
+	description: any;
+	members: Map<any, any>;
+	messages: Map<any, any>;
 	constructor(name, description, id, owner) {
 		super();
 		// channel name and description
@@ -326,7 +355,7 @@ class Channel extends HammerObject {
 	}
 }
 
-module.exports = {
+export {
 	User,
 	Channel,
 	Message,

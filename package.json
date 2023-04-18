@@ -1,15 +1,17 @@
 {
   "name": "boiler",
   "packageManager": "yarn@3.5.0",
-  "version": "0.4.0",
+  "version": "1.4.0",
   "private": true,
   "license": "zlib-acknowledgement",
   "author": "chrono <chrono@disilla.org>",
-  "main": "src/server.js",
+  "main": "built/server.js",
   "scripts": {
     "lint": "eslint . --ext js",
     "lint:fix": "eslint . --ext js",
-    "start": "node ."
+    "start": "node .",
+	"prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
+    "build": "tsc"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
@@ -17,14 +19,18 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
-    "prompts": "^2.4.2",
     "uuid": "^9.0.0",
     "ws": "^8.13.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.1",
     "@types/node": "^18.15.11",
+    "@types/uuid": "^9.0.1",
     "eslint": "^8.38.0",
     "eslint-plugin-json": "^3.1.0",
+    "prettier": "^2.8.7",
     "ts-node": "^10.9.1",
     "tslib": "^2.5.0",
     "typescript": "^5.0.4"

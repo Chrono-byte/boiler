@@ -1,8 +1,11 @@
-const { Message } = require("./structures/structures");
-const db = require("./db/dbAPI");
-const { users } = require("./db/users");
+import { Message } from "./structures/structures";
+import channels from "./db/dbAPI";
 
-const jwt = require("jsonwebtoken");
+import { checkTokenAuth } from "./db/dbAPI";
+
+import { users } from "./db/users";
+
+import jwt from "jsonwebtoken";
 
 function socketHandler(message, context) {
 	var { ws, user, handshakeComplete } = context;
@@ -39,7 +42,7 @@ function socketHandler(message, context) {
 		if (message.op == 11 && message.type == "IDENTIFY") {
 			if (message.data.token) {
 				// check that the token is valid
-				if (!db.checkTokenAuth(message.data.token)) {
+				if (!checkTokenAuth(message.data.token)) {
 					console.log(
 						`Rejected improper handshake from ${username}!`
 					);
@@ -50,10 +53,15 @@ function socketHandler(message, context) {
 
 				// get the username from the token
 				try {
-					username = jwt.verify(
-						message.data.token,
-						process.env.JWT_SECRET
-					).username;
+					interface Token {
+						username: string;
+						id: string;
+						permissions: object;
+					}
+
+					var decodedToken = jwt.verify(message.data.token, process.env.JWT_SECRET) as Token;
+
+					username = decodedToken.username;
 				} catch (err) {
 					// set username to "Unknown"
 					username = "Unknown";
@@ -62,7 +70,7 @@ function socketHandler(message, context) {
 
 			var channels = new Map();
 			// how to iterate over a map
-			for (let [, channel] of db.channels) {
+			for (let [, channel] of channels) {
 				// check if the user is in the channel
 				if (channel.members.has(user.id)) {
 					// add it to our channels map
@@ -83,21 +91,21 @@ function socketHandler(message, context) {
 				usersTo.set(user.id, {
 					username: user.username,
 					id: user.id,
-					avatar: user.avatar,
+					avatarURL: user.avatarURL,
 					permissions: user.permissions,
 				});
 			}
 
-			// convert our map to an array of only the values
-			channels = Array.from(channels.values());
-			usersTo = Array.from(usersTo.values());
+			// convert our map to an array of only the values, also change the map to an array
+			var channelsO = Array.from(channels.values());
+			var usersToO = Array.from(usersTo.values());
 
 			// send the identify ack
 			ws.json({
 				op: 12,
 				data: {
-					channels: JSON.stringify(channels),
-					users: JSON.stringify(usersTo)
+					channels: JSON.stringify(channelsO),
+					users: JSON.stringify(usersToO)
 				},
 				type: "READY",
 			});
@@ -152,7 +160,7 @@ function socketHandler(message, context) {
 			}
 
 			// verify that the channel exists
-			if (!db.channels.has(message.data.channel)) {
+			if (!channels.has(message.data.channel)) {
 				console.log(`${username} requested non-existant channel!`);
 
 				ws.json({
@@ -166,7 +174,7 @@ function socketHandler(message, context) {
 			}
 
 			// verify that the user is actually in the channel requested
-			if (!db.channels.get(message.data.channel).members.has(user.id)) {
+			if (!channels.get(message.data.channel).members.has(user.id)) {
 				console.log(
 					`${username} requested to join a channel they're not in!`
 				);
@@ -182,7 +190,7 @@ function socketHandler(message, context) {
 		}
 
 		// update current sock channel
-		var channel = db.channels.get(message.data.channel);
+		var channel = channels.get(message.data.channel);
 
 		// switch on the op code 0-9, empty blocks
 		switch (message.op) {
@@ -203,7 +211,7 @@ function socketHandler(message, context) {
 				var msg = new Message(
 					message.data.content,
 					user.id,
-					db.channels.get(message.data.channel)
+					channels.get(message.data.channel)
 				);
 
 				// send message
@@ -232,4 +240,4 @@ function socketHandler(message, context) {
 	}
 }
 
-module.exports = { messageHandler: socketHandler };
+export default socketHandler;

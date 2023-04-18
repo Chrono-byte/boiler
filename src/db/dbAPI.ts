@@ -7,15 +7,15 @@
  */
 
 // import internal deps
-const { generateSnowflake } = require("../util/snowflake");
+import generateSnowflake from "../util/snowflake";
 
 // import external deps
-const bcrypt = require("bcrypt");
+import bcrypt from "bcrypt";
 
 // import internal deps
-const { User, Channel } = require("../structures/structures");
+import { User, Channel } from "../structures/structures";
 
-const { users, getUserById } = require("./users");
+import { users, getUserById } from "./users";
 
 // data structure to store channels
 const channels = new Map();
@@ -45,8 +45,8 @@ function addUser(email, username, password, permissions) {
 	// create promise
 	const promise1 = new Promise((resolve, reject) => {
 		// hash password
-		bcrypt.hash(password, 10).then((hash) => {
-			let id = generateSnowflake();
+		bcrypt.hash(password, 10).then((hash: string) => {
+			var id = generateSnowflake();
 
 			// add user to database
 			users.set(id, new User(email, username, hash, {
@@ -214,4 +214,19 @@ function getUserByToken(token) {
 	return null;
 }
 
-module.exports = { addUser, checkPassword, checkTokenAuth, createChannel, deleteChannel, getChannelById, getChannelByName, getUserByToken, kickUserFromChannel, addUserToChannel, channels };
+// export functions as ESM module
+export default channels;
+
+export {
+	// export functions
+	addUser,
+	checkPassword,
+	checkTokenAuth,
+	createChannel,
+	deleteChannel,
+	addUserToChannel,
+	kickUserFromChannel,
+	getUserByToken,
+	getChannelById,
+	getChannelByName,
+};

@@ -1,13 +1,14 @@
 "use strict";
-
 /*
  * Hammer - A simple WebSocket-based chat server & client written in JavaScript.
  *
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-// data structure to store users
-const users = new Map();
+import { User } from "../structures/structures";
+
+// users, Map<string, User>
+const users = new Map<string, User>();
 
 // get user by username function
 function getUserByEmail(username) {
@@ -34,4 +35,4 @@ function getUserById(id) {
 	return null;
 }
 
-module.exports = { users, getUserByEmail, getUserById };
+export { users, getUserByEmail, getUserById };

@@ -7,19 +7,21 @@
  */
 
 // net-related modules
-const express = require("express");
+import express from "express";
 
-// import environment
-require("dotenv").config();
+// dotenv
+import dotenv from "dotenv";
+dotenv.config();
 
 // import internal deps
-const { addUser, checkPassword, checkTokenAuth, getUserByToken } = require("../db/dbAPI");
-const { getUserByEmail } = require("../db/users");
+import { addUser, checkPassword, checkTokenAuth, getUserByToken } from "../db/dbAPI";
+import { getUserByEmail } from "../db/users";
 
 // create router
 const router = express.Router();
 
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
+import { User } from "../structures/structures";
 
 // login endpoint
 router.post("/login/email", (req, res) => {
@@ -31,7 +33,7 @@ router.post("/login/email", (req, res) => {
 		return;
 	}
 
-	getUserByEmail(username).then((user) => {
+	getUserByEmail(username).then((user: User) => {
 		// check if password is correct
 		if (checkPassword(password, user.hash)) {
 			// generate token
@@ -116,4 +118,6 @@ const auth = (req, res, next) => {
 	}
 };
 
-module.exports = { router, auth };
+export {
+	router as auth
+}

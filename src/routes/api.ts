@@ -16,14 +16,21 @@ const npm_package_version = require("../../package.json").version;
 const { auth } = require("./auth");
 
 // import database functions
-const { getChannelById, getChannelByName, createChannel, deleteChannel, kickUserFromChannel, addUserToChannel } = require("../db/dbAPI");
+const {
+	getChannelById,
+	getChannelByName,
+	createChannel,
+	deleteChannel,
+	kickUserFromChannel,
+	addUserToChannel,
+} = require("../db/dbAPI");
 const { getUserById } = require("../db/users");
 
 // create router
 const router = express.Router();
 
 // create event emitter
-const EventEmitter = require("events");
+import { EventEmitter } from "events";
 const communicator = new EventEmitter();
 
 router.use(express.json());
@@ -33,35 +40,37 @@ router.use(auth);
 router.get("/", (req, res) => {
 	let status = {
 		// server info
-		"name": "Hammer Test Server",
-		"description": "A simple WebSocket-based chat server & client written in JavaScript",
+		name: "Hammer Test Server",
+		description:
+			"A simple WebSocket-based chat server & client written in JavaScript",
 
 		// server health
-		"health": ["OK", {
-			"uptime": process.uptime(),
-			"mem": process.memoryUsage(),
-			"cpu": process.cpuUsage(),
-		}],
+		health: [
+			"OK",
+			{
+				uptime: process.uptime(),
+				mem: process.memoryUsage(),
+				cpu: process.cpuUsage(),
+			},
+		],
 
 		// server build/brand info
-		"brand": {
-			"build": {
-				"date": process.env.BUILD_DATE,
-				"commit": process.env.BUILD_COMMIT,
-				"branch": process.env.BUILD_BRANCH,
-				"tag": process.env.BUILD_TAG,
+		brand: {
+			build: {
+				date: process.env.BUILD_DATE,
+				commit: process.env.BUILD_COMMIT,
+				branch: process.env.BUILD_BRANCH,
+				tag: process.env.BUILD_TAG,
 			},
-			"brand": {
-				"name": "Boiler",
-				"version": npm_package_version
+			brand: {
+				name: "Boiler",
+				version: npm_package_version,
 			},
-			"authors": [
-				"Chrono <chrono@disilla.org>",
-			]
+			authors: ["Chrono <chrono@disilla.org>"],
 		},
 
 		// auth status, non-authenticated agents will not be able to access any other endpoints
-		"authenticated": false
+		authenticated: false,
 	};
 
 	status.authenticated = req.authenticated;
@@ -117,9 +126,11 @@ router.post("/channels", (req, res) => {
 	}
 
 	// add channel to database
-	createChannel({ name: name, description: description }, req.user.id).catch((err) => {
-		console.log(err);
-	});
+	createChannel({ name: name, description: description }, req.user.id).catch(
+		(err) => {
+			console.log(err);
+		}
+	);
 
 	let channel = getChannelByName(name);
 
@@ -144,6 +155,8 @@ router.delete("/channels/:id", (req, res) => {
 		return;
 	}
 
+	let { id } = req.params;
+
 	// check if channel exists
 	if (getChannelById(id) == null) {
 		// send error
@@ -157,8 +170,6 @@ router.delete("/channels/:id", (req, res) => {
 		res.status(401).json({ error: "User is not owner of channel" });
 		return;
 	}
-
-	let { id } = req.params;
 
 	// delete channel
 	deleteChannel(id);
@@ -209,7 +220,10 @@ router.delete("/channels/:id/members/:uid", (req, res) => {
 	}
 
 	// check if user is owner OR a server admin
-	if (getChannelById(id).owner != req.user.id && !req.user.permissions.ADMINISTRATOR) {
+	if (
+		getChannelById(id).owner != req.user.id &&
+		!req.user.permissions.ADMINISTRATOR
+	) {
 		// send error
 		res.status(401).json({ error: "Refused." });
 		return;
@@ -255,7 +269,10 @@ router.delete("/channels/:id/members/@me", (req, res) => {
 	}
 
 	// check if user is in channel and that the user is not the owner
-	if (!getChannelById(id).members.has(req.user.id) || getChannelById(id).owner.id == req.user.id) {
+	if (
+		!getChannelById(id).members.has(req.user.id) ||
+		getChannelById(id).owner.id == req.user.id
+	) {
 		// send error
 		res.status(500).json({ error: "User is not in channel" });
 		return;
@@ -294,7 +311,11 @@ router.put("/channels/:id/members", (req, res) => {
 	let user = getUserById(req.user.id);
 	let uid = req.user.id;
 
-	console.log(`${user.username} is requesting to join channel ${getChannelById(id).name}`);
+	console.log(
+		`${user.username} is requesting to join channel ${
+			getChannelById(id).name
+		}`
+	);
 
 	// check if user is already in channel
 	if (getChannelById(id).members.has(uid)) {
@@ -311,11 +332,10 @@ router.put("/channels/:id/members", (req, res) => {
 
 	// add user to channel
 	try {
-		addUserToChannel(id, uid).catch(err => {
+		addUserToChannel(id, uid).catch((err) => {
 			console.log(err);
 		});
-	}
-	catch (err) {
+	} catch (err) {
 		console.log(err);
 	}
 
@@ -447,44 +467,5 @@ router.put("/user/:id/username", (req, res) => {
 	communicator.emit("updateUser", { user: id });
 });
 
-// get all channels a user is in endpoint
-router.get("/user/:id/channels", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
-		res.status(401).json({ error: "User is not authenticated" });
-		return;
-	}
-
-	var { id } = req.params;
-
-	// check that user is the user making the request
-	if (id != req.user.id) {
-		// send error
-		res.status(401).json({ error: "You are not authorized to do this" });
-		return;
-	}
-
-	// check if user exists
-	if (getUserById(id) == null) {
-		// send error
-		res.status(500).json({ error: "User does not exist" });
-		return;
-	}
-
-	var channels = getUserById(id).channels;
-
-	var cArray = Array.from(channels);
-
-	// delete all messages from channels
-	for (var i = 0; i < cArray.length; i++) {
-		cArray[i].messages = [];
-	}
-
-	// send channels over network
-	res.status(200).json(cArray);
-	return;
-});
-
-// export router
-module.exports = { router, communicator };
+// export communicator as ESM
+export { communicator as com, router as api };
