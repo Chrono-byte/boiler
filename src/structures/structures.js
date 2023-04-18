@@ -71,10 +71,13 @@ class Message {
 	}
 }
 
-class BaseChannel {
-	constructor() {
-		// messages store
-		this.messages = new Map();
+class HammerObject {
+	constructor() {}
+
+	serialize() {
+		return {
+			...this
+		}
 	}
 }
 
@@ -167,7 +170,7 @@ class User {
 	}
 }
 
-class Channel extends BaseChannel {
+class Channel extends HammerObject {
 	constructor(name, description, id, owner) {
 		super();
 		// channel name and description
@@ -180,6 +183,9 @@ class Channel extends BaseChannel {
 
 		// list of members in the channel
 		this.members = new Map();
+
+		// messages store
+		this.messages = new Map();
 	}
 
 	rename(name, user) {

@@ -25,7 +25,7 @@ require("dotenv").config();
 // import external deps
 const jwt = require("jsonwebtoken");
 const db = require("./db/dbAPI");
-const { getUserById } = require("./db/users");
+const { getUserById, users } = require("./db/users");
 const { Banner } = require("./cmd");
 
 // prompt the user for the port
@@ -82,7 +82,7 @@ wss.on("connection", (ws, req) => {
 			return ws.close();
 		}
 
-		// send authorized handshake
+		// send authorized notice, requesting IDENTIFY event from client
 		ws.json({
 			op: 10,
 			data: { message: "Authorized" },
@@ -100,9 +100,6 @@ wss.on("connection", (ws, req) => {
 		// if this did happen, the token would have to be created by us, set as the user's token, and then sent to the client.
 		username = "Hackerman";
 	}
-
-	// console.log that we've received a connection
-	console.log(`Received connection from ${username}!`);
 
 	// get the user from the database
 	let user = db.getUserByToken(token);
@@ -178,10 +175,8 @@ com.on("updateUser", (obj) => {
 	// get the user from the database
 	user = db.getUserById(user);
 
-	if(!user.socket) return;
-
 	// for every connected user, send the updated user
-	for (let u of user) {
+	for (let u of users) {
 		if (u.socket) {
 			u.socket.json({
 				op: 0,

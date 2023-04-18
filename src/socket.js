@@ -2,13 +2,11 @@ const { Message } = require("./structures/structures");
 const db = require("./db/dbAPI");
 const { users } = require("./db/users");
 
-function messageHandler(message, context, mods) {
+const jwt = require("jsonwebtoken");
+
+function socketHandler(message, context) {
 	var { ws, user, handshakeComplete } = context;
 	var { username } = user;
-
-	// db, jwt
-	var { jwt } = mods;
-
 	// check if the message is valid, if not, return.
 	if (!message) return;
 
@@ -37,7 +35,7 @@ function messageHandler(message, context, mods) {
 
 	// check if the handshake is complete
 	if (!handshakeComplete) {
-		// await falken identify payload
+		// await identify payload
 		if (message.op == 11 && message.type == "IDENTIFY") {
 			if (message.data.token) {
 				// check that the token is valid
@@ -66,7 +64,7 @@ function messageHandler(message, context, mods) {
 			// how to iterate over a map
 			for (let [, channel] of db.channels) {
 				// check if the user is in the channel
-				if (value.members.has(user.id)) {
+				if (channel.members.has(user.id)) {
 					// add it to our channels map
 					channels.set(channel.id, {
 						name: channel.name,
@@ -98,7 +96,6 @@ function messageHandler(message, context, mods) {
 			ws.json({
 				op: 12,
 				data: {
-					message: "Identified",
 					channels: JSON.stringify(channels),
 					users: JSON.stringify(usersTo)
 				},
@@ -106,13 +103,25 @@ function messageHandler(message, context, mods) {
 			});
 
 			// set handshake complete to true
-			return (handshakeComplete = true);
-		}
+			handshakeComplete = true;
 
+			// log that we've accepted the handshake
+			console.log(handshakeComplete);
+			return;
+		}
 		// else, close the connection
 		else {
 			// log that we're rejecting an improper handshake
-			console.log(`Rejected improper handshake from ${username}!`);
+			console.log(`Rejected message from ${username} as handshake was incomplete!`);
+
+			// send the error control command to the client
+			ws.json({
+				op: 9,
+				data: {
+					message: "You've sent a message before identifying!",
+				},
+				type: "ERROR",
+			});
 
 			// close the connection
 			return ws.close();
@@ -223,4 +232,4 @@ function messageHandler(message, context, mods) {
 	}
 }
 
-module.exports = { messageHandler };
+module.exports = { messageHandler: socketHandler };
