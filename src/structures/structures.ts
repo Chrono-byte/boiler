@@ -136,6 +136,7 @@ class User {
 	socket: WebSocket & { json: (data: unknown) => void }
 	Member: Member;
 	channels: Map<string, Channel>;
+	handshakeComplete: boolean
 	constructor(email, username, hash, permissions, id) {
 		// Account auth info
 		this.email = email as string;

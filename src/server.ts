@@ -55,92 +55,106 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // Listen for connections
-wss.on("connection", (ws: WebSocket & { json: (data: unknown) => void } & EventEmitter, request) => {
-	const url = new URL(request.url, `http://${request.headers.host}`);
-	const token = url.searchParams.get("token");
+wss.on(
+	"connection",
+	(
+		ws: WebSocket & { json: (data: unknown) => void } & EventEmitter,
+		request
+	) => {
+		const url = new URL(request.url, `http://${request.headers.host}`);
+		const token = url.searchParams.get("token");
 
-	// Add json helper function
-	ws.json = (data) => { ws.send(JSON.stringify(data)); };
+		// Add json helper function
+		ws.json = (data) => {
+			ws.send(JSON.stringify(data));
+		};
 
-	// Check that token was provided
-	if (!token) {
-		return ws.close();
-	}
-
-	// Check that the connection is an authorized user
-	const auth = checkTokenAuth(token);
-
-	// If the connection is not authorized, close the connection
-	if (auth) {
-		// See if the user is already connected
-		const user = getUserByToken(token);
-
-		// If the user is already connected, close the connection
-		if (user.socket) {
-			// Log that the user is already connected
-			console.log(`User ${user.username} is already connected!`);
-
+		// Check that token was provided
+		if (!token) {
 			return ws.close();
 		}
 
-		// Send authorized notice, requesting IDENTIFY event from client
-		ws.json({
-			op: 10,
-			data: { message: "Authorized" },
-			type: "HELLO",
+		// Check that the connection is an authorized user
+		const auth = checkTokenAuth(token);
+
+		// If the connection is not authorized, close the connection
+		if (auth) {
+			// See if the user is already connected
+			const user = getUserByToken(token);
+
+			// If the user is already connected, close the connection
+			if (user.socket) {
+				// Log that the user is already connected
+				console.log(`User ${user.username} is already connected!`);
+
+				return ws.close();
+			}
+
+			// Send authorized notice, requesting IDENTIFY event from client
+			ws.json({
+				op: 10,
+				data: { message: "Authorized" },
+				type: "HELLO",
+			});
+		} else {
+			return ws.close();
+		}
+
+		let username;
+		// Get the username from the token
+		try {
+			type Token = {
+				username: string;
+				id: string;
+				permissions: Record<string, unknown>;
+			};
+
+			const decodedToken = jwt.verify(
+				token,
+				process.env.JWT_SECRET
+			) as Token;
+
+			username = decodedToken.username;
+		} catch {
+			// This should never happen, as the username should always be contained in the token.
+			// in the event it does, we'll set the username to "Hackerman" if it fails to verify.
+			// if this did happen, the token would have to be created by us, set as the user's token, and then sent to the client.
+			username = "Hackerman";
+		}
+
+		// Get the user from the database
+		const user = getUserByToken(token);
+
+		// Set the user's token & socket
+		user.token = token;
+		user.socket = ws;
+
+		console.log(`${username} has joined the server.`);
+		// Handshake complete variable
+		user.handshakeComplete = false;
+
+		ws.on("message", (message) => socketHandler(message, { ws, user }));
+
+		ws.on("close", () => {
+			console.log(`${username} has left the server.`);
+
+			// Remove the user's socket, if it exists
+			if (user.socket) {
+				user.socket = null;
+			}
+
+			// Remove the user's token, if it exists
+			if (user.token) {
+				user.token = null;
+			}
+
+			// Remove the user handshake complete variable
+			if (user.handshakeComplete == true) {
+				user.handshakeComplete = false;
+			}
 		});
-	} else {
-		return ws.close();
 	}
-
-	let username;
-	// Get the username from the token
-	try {
-		type Token = {
-			username: string;
-			id: string;
-			permissions: Record<string, unknown>;
-		};
-
-		const decodedToken = jwt.verify(token, process.env.JWT_SECRET) as Token;
-
-		username = decodedToken.username;
-	} catch {
-		// This should never happen, as the username should always be contained in the token.
-		// in the event it does, we'll set the username to "Hackerman" if it fails to verify.
-		// if this did happen, the token would have to be created by us, set as the user's token, and then sent to the client.
-		username = "Hackerman";
-	}
-
-	// Get the user from the database
-	const user = getUserByToken(token);
-
-	// Set the user's token & socket
-	user.token = token;
-	user.socket = ws;
-
-	console.log(`${username} has joined the server.`);
-	// Handshake complete variable
-	const handshakeComplete = false;
-
-	ws.on("message", (message) =>
-		socketHandler(message, { ws, user, handshakeComplete })
-	);
-
-	ws.on("close", () => {
-		console.log(`${username} has left the server.`);
-
-		// Remove the user's socket, if it exists
-		if (user.socket) {
-			user.socket = null;
-		}
-
-		// Remove the user's token, if it exists
-		if (user.token) {
-			user.token = null;
-		}
-	});
-});
+);
 
 // Channel join event
 com.on("channelJoin", (object) => {
