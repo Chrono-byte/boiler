@@ -1,4 +1,5 @@
-"use strict";
+// Create event emitter
+import { EventEmitter } from "node:events";
 
 /*
  * Hammer - A simple WebSocket-based chat server & client written in JavaScript.
@@ -7,44 +8,56 @@
  */
 
 // net-related imports
-const express = require("express");
-require("dotenv").config();
+import express from "express";
 
-const npm_package_version = require("../../package.json").version;
+// dotenv
+import dotenv from "dotenv";
+dotenv.config();
 
-// import authentication middleware
-const { auth } = require("./auth");
+// get version from version.ts
+import { LIB_VERSION as npm_package_version } from "../version";
 
-// import database functions
-const {
+// Import database functions
+import {
 	getChannelById,
 	getChannelByName,
 	createChannel,
 	deleteChannel,
 	kickUserFromChannel,
 	addUserToChannel,
-} = require("../db/dbAPI");
-const { getUserById } = require("../db/users");
+} from "../db/dbAPI";
+import { getUserById } from "../db/users";
+import { auth } from "./auth";
+import { User } from "../structures/structures";
 
-// create router
+// Create router
 const router = express.Router();
 
-// create event emitter
-import { EventEmitter } from "events";
 const communicator = new EventEmitter();
 
 router.use(express.json());
 router.use(auth);
 
+// extend express request type to include authenticated property, user property which is added by auth middleware with ES2015 namespace merging
+declare global {
+	// eslint-disable-next-line @typescript-eslint/no-namespace
+	namespace Express {
+		interface Request {
+			authenticated: boolean;
+			user: User;
+		}
+	}
+}
+
 // API status endpoint
-router.get("/", (req, res) => {
-	let status = {
-		// server info
+router.get("/", (request, res) => {
+	const status = {
+		// Server info
 		name: "Hammer Test Server",
 		description:
 			"A simple WebSocket-based chat server & client written in JavaScript",
 
-		// server health
+		// Server health
 		health: [
 			"OK",
 			{
@@ -54,7 +67,7 @@ router.get("/", (req, res) => {
 			},
 		],
 
-		// server build/brand info
+		// Server build/brand info
 		brand: {
 			build: {
 				date: process.env.BUILD_DATE,
@@ -69,247 +82,245 @@ router.get("/", (req, res) => {
 			authors: ["Chrono <chrono@disilla.org>"],
 		},
 
-		// auth status, non-authenticated agents will not be able to access any other endpoints
+		// Auth status, non-authenticated agents will not be able to access any other endpoints
 		authenticated: false,
 	};
 
-	status.authenticated = req.authenticated;
+	status.authenticated = request.authenticated;
 
 	res.json(status);
 });
 
-// get channel endpoint
-router.get("/channels/:id", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
+// Get channel endpoint
+router.get("/channels/:id", (request, res) => {
+	// Check if user is authenticated
+	if (!request.authenticated) {
+		// Send error
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
 
-	let { id } = req.query;
+	const { id } = request.query;
 
-	// check that requesting user is a member of the channel
-	if (!getChannelById(id).members.includes(req.user.id)) {
-		// send error
+	// Check that requesting user is a member of the channel
+	if (!getChannelById(id).members.includes(request.user.id)) {
+		// Send error
 		res.status(401).json({ error: "User is not a member of channel" });
 		return;
 	}
 
-	// fetch channel from database
+	// Fetch channel from database
 	return res.status(200).json(getChannelById(id));
 });
 
-// create channel endpoint
-router.post("/channels", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
+// Create channel endpoint
+router.post("/channels", (request, res) => {
+	// Check if user is authenticated
+	if (!request.authenticated) {
+		// Send error
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
 
-	let { name, description } = req.body;
+	const { name, description } = request.body;
 
-	// check that name is a valid string
+	// Check that name is a valid string
 	if (typeof name !== "string") {
-		// send error
+		// Send error
 		res.status(500).json({ error: "Invalid channel name" });
 		return;
 	}
 
-	// check if channel exists
+	// Check if channel exists
 	if (getChannelByName(name) != null) {
-		// send error
+		// Send error
 		// res.status(409).json({ error: "Channel already exists" });
 		return;
 	}
 
-	// add channel to database
-	createChannel({ name: name, description: description }, req.user.id).catch(
-		(err) => {
-			console.log(err);
-		}
-	);
+	// Add channel to database
+	createChannel({ name, description }, request.user.id).catch((error) => {
+		console.log(error);
+	});
 
-	let channel = getChannelByName(name);
+	const channel = getChannelByName(name);
 
-	// log channel creation
-	console.log(`Channel ${channel.name} created by ${req.user.username}`);
+	// Log channel creation
+	console.log(`Channel ${channel.name} created by ${request.user.username}`);
 
 	if (channel == null) {
 		res.status(409).json({ error: "Channel could not be created" });
 		return;
 	}
 
-	// send channel over network
+	// Send channel over network
 	res.status(200).json(channel);
 });
 
-// delete channel endpoint
-router.delete("/channels/:id", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
+// Delete channel endpoint
+router.delete("/channels/:id", (request, res) => {
+	// Check if user is authenticated
+	if (!request.authenticated) {
+		// Send error
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
 
-	let { id } = req.params;
+	const { id } = request.params;
 
-	// check if channel exists
+	// Check if channel exists
 	if (getChannelById(id) == null) {
-		// send error
+		// Send error
 		res.status(500).json({ error: "Channel does not exist" });
 		return;
 	}
 
-	// check if user is owner of channel
-	if (getChannelById(id).owner != req.user.id) {
-		// send error
+	// Check if user is owner of channel
+	if (getChannelById(id).owner != request.user.id) {
+		// Send error
 		res.status(401).json({ error: "User is not owner of channel" });
 		return;
 	}
 
-	// delete channel
+	// Delete channel
 	deleteChannel(id);
 
-	// send success
+	// Send success
 	res.status(200).json({ success: true });
-	return;
 });
 
-// get channel members endpoint
-router.get("/channels/:id/members/", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
+// Get channel members endpoint
+router.get("/channels/:id/members/", (request, res) => {
+	// Check if user is authenticated
+	if (!request.authenticated) {
+		// Send error
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
 
-	let { id } = req.params;
+	const { id } = request.params;
 
-	// check if channel exists
+	// Check if channel exists
 	if (getChannelById(id) == null) {
-		// send error
+		// Send error
 		res.status(500).json({ error: "Channel does not exist" });
 	}
 
-	// send channel over network
+	// Send channel over network
 	res.status(200).json(getChannelById(id).members);
-	return;
 });
 
-// kick user endpoint
-router.delete("/channels/:id/members/:uid", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
+// Kick user endpoint
+router.delete("/channels/:id/members/:uid", (request, res) => {
+	// Check if user is authenticated
+	if (!request.authenticated) {
+		// Send error
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
 
-	let { id, uid } = req.params;
+	const { id, uid } = request.params;
 
-	// check if channel exists
+	// Check if channel exists
 	if (getChannelById(id) == null) {
-		// send error
+		// Send error
 		res.status(500).json({ error: "Channel does not exist" });
 		return;
 	}
 
-	// check if user is owner OR a server admin
+	// Check if user is owner OR a server admin
 	if (
-		getChannelById(id).owner != req.user.id &&
-		!req.user.permissions.ADMINISTRATOR
+		getChannelById(id).owner != request.user.id &&
+		!request.user.permissions.ADMINISTRATOR
 	) {
-		// send error
+		// Send error
 		res.status(401).json({ error: "Refused." });
 		return;
 	}
 
-	// check if user is in channel
+	// Check if user is in channel
 	if (!getChannelById(id).members.has(uid)) {
-		// send error
+		// Send error
 		res.status(500).json({ error: "User is not in channel" });
 		return;
 	}
 
 	try {
-		// kick user
+		// Kick user
 		kickUserFromChannel(id, uid);
-	} catch (err) {
-		// send error
+	} catch {
+		// Send error
 		res.status(500).json({ error: "User could not be kicked" });
 		return;
 	}
 
-	// send success
+	// Send success
 	res.status(200).json({ success: true });
-	return;
 });
 
-// leave channel endpoint
-router.delete("/channels/:id/members/@me", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
+// Leave channel endpoint
+router.delete("/channels/:id/members/@me", async (request, res) => {
+	// Check if user is authenticated
+	if (!request.authenticated) {
+		// Send error
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
 
-	let { id } = req.params;
+	const { id } = request.params;
 
-	// check if channel exists
+	// Check if channel exists
 	if (getChannelById(id) == null) {
-		// send error
+		// Send error
 		res.status(500).json({ error: "Channel does not exist" });
 		return;
 	}
 
-	// check if user is in channel and that the user is not the owner
+	// Check if user is in channel and that the user is not the owner
 	if (
-		!getChannelById(id).members.has(req.user.id) ||
-		getChannelById(id).owner.id == req.user.id
+		!getChannelById(id).members.has(request.user.id) ||
+		getChannelById(id).owner.id == request.user.id
 	) {
-		// send error
+		// Send error
 		res.status(500).json({ error: "User is not in channel" });
 		return;
 	}
 
-	// remove user from channel
+	// Remove user from channel
 	try {
-		getChannelById(id).members.delete(req.user.id);
-	} catch (err) {
-		// send error
+		getChannelById(id).members.delete(request.user.id);
+	} catch {
+		// Send error
 		res.status(500).json({ error: "User could not be removed" });
 		return;
 	}
 
-	// emit event for WS gateway
-	communicator.emit("channelLeave", { channel: id, user: req.user.id });
+	// Emit event for WS gateway
+	communicator.emit("channelLeave", { channel: id, user: request.user.id });
 
-	// remove channel id from user's channel list
-	getUserById(req.user.id).channels.delete(id);
+	// Get user
+	const user = await getUserById(request.user.id);
 
-	// send success
+	// Remove channel id from user's channel list
+	user.channels.delete(id);
+
+	// Send success
 	res.status(200).json({ success: true });
-	return;
 });
 
-// put user into channel endpoint
-router.put("/channels/:id/members", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
+// Put user into channel endpoint
+router.put("/channels/:id/members", async (request, res) => {
+	// Check if user is authenticated
+	if (!request.authenticated) {
+		// Send error
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
-	let { id } = req.params;
 
-	let user = getUserById(req.user.id);
-	let uid = req.user.id;
+	const { id } = request.params;
+
+	const user = await getUserById(request.user.id);
+	const uid = request.user.id;
 
 	console.log(
 		`${user.username} is requesting to join channel ${
@@ -317,155 +328,165 @@ router.put("/channels/:id/members", (req, res) => {
 		}`
 	);
 
-	// check if user is already in channel
+	// Check if user is already in channel
 	if (getChannelById(id).members.has(uid)) {
-		// send error
+		// Send error
 		res.status(409).json({ error: "User is already in channel" });
 		return;
 	}
 
-	// check if channel exists
+	// Check if channel exists
 	if (getChannelById(id) == null) {
-		// send error
+		// Send error
 		res.status(500).json({ error: "Channel does not exist" });
 	}
 
-	// add user to channel
+	// Add user to channel
 	try {
-		addUserToChannel(id, uid).catch((err) => {
-			console.log(err);
+		addUserToChannel(id, uid).catch((error) => {
+			console.log(error);
 		});
-	} catch (err) {
-		console.log(err);
+	} catch (error) {
+		console.log(error);
 	}
 
-	// check if user is in channel
+	// Check if user is in channel
 	if (!getChannelById(id).members.has(uid)) {
-		// send error
+		// Send error
 		console.log(`${user.username} could not be added to channel`);
 		return;
-	} else if (getChannelById(id).members.has(uid)) {
+	}
+
+	if (getChannelById(id).members.has(uid)) {
 		console.log(`${user.username} was added to channel`);
 	}
 
-	// emit event for WS gateway
+	// Emit event for WS gateway
 	communicator.emit("channelJoin", { channel: id, user: uid });
 
-	// send channel over network
+	// Send channel over network
 	res.status(200).json(getChannelById(id));
-	return;
 });
 
-// get user info endpoint
-router.get("/user/:id", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
+// Get user info endpoint
+router.get("/user/:id", async (request, res) => {
+	// Check if user is authenticated
+	if (!request.authenticated) {
+		// Send error
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
 
-	let { id } = req.params;
+	const { id } = request.params;
 
-	// check if user exists
+	// Check if user exists
 	if (getUserById(id) == null) {
-		// send error
+		// Send error
 		res.status(500).json({ error: "User does not exist" });
 		return;
 	}
 
-	// send user over network
-	res.status(200).json(getUserById(id).Member);
-	return;
+	// Get user
+	const user = await getUserById(id);
+
+	// Send user over network
+	res.status(200).json(user.Member);
 });
 
-// set user avatar endpoint
-router.put("/user/:id/avatar", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
+// Set user avatar endpoint
+router.put("/user/:id/avatar", async (request, res) => {
+	// Check if user is authenticated
+	if (!request.authenticated) {
+		// Send error
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
 
-	let { id } = req.params;
+	const { id } = request.params;
 
-	// check if user exists and if the user making the request is the user
-	if (getUserById(id) == null || id != req.user.id) {
-		// send error
+	// Check if user exists and if the user making the request is the user
+	if (getUserById(id) == null || id != request.user.id) {
+		// Send error
 		res.status(500).json({ error: "User does not exist" });
 		return;
 	}
 
-	// check if avatar is set
-	if (req.body.avatar == null) {
-		// send error
+	// Check if avatar is set
+	if (request.body.avatar == null) {
+		// Send error
 		res.status(500).json({ error: "Avatar is not set" });
 		return;
 	}
 
-	// set avatar
-	getUserById(id).setAvatarURL(req.body.avatar);
+	// Get user
+	const user = await getUserById(id);
 
-	// send success
+	// Set avatar
+	user.setAvatarURL(request.body.avatar);
+
+	// Send success
 	res.status(200).json({ success: true });
-	return;
 });
 
-// get user avatar endpoint
-router.get("/user/:id/avatar", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
+// Get user avatar endpoint
+router.get("/user/:id/avatar", async (request, res) => {
+	// Check if user is authenticated
+	if (!request.authenticated) {
+		// Send error
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
 
-	let { id } = req.params;
+	const { id } = request.params;
 
-	// check if user exists
-	if (getUserById(id) == null) {
-		// send error
+	// Get user
+	const user = await getUserById(id);
+
+	// Check if user exists
+	if (user == null) {
+		// Send error
 		res.status(500).json({ error: "User does not exist" });
 		return;
 	}
 
-	// send avatar over network
-	res.status(200).json({ avatar: getUserById(id).avatarURL });
-	return;
+	// Send avatar over network
+	res.status(200).json({ avatar: user.avatarURL });
 });
 
-// set username endpoint
-router.put("/user/:id/username", (req, res) => {
-	// check if user is authenticated
-	if (!req.authenticated) {
-		// send error
+// Set username endpoint
+router.put("/user/:id/username", async (request, res) => {
+	// Check if user is authenticated
+	if (!request.authenticated) {
+		// Send error
 		res.status(401).json({ error: "User is not authenticated" });
 		return;
 	}
 
-	let { id } = req.params;
+	const { id } = request.params;
 
-	// check if user exists and if the user making the request is the user
-	if (getUserById(id) == null || id != req.user.id) {
-		// send error
+	// Check if user exists and if the user making the request is the user
+	if (getUserById(id) == null || id != request.user.id) {
+		// Send error
 		res.status(500).json({ error: "User does not exist" });
 		return;
 	}
 
-	// check if username is set
-	if (req.body.username == null) {
-		// send error
+	// Check if username is set
+	if (request.body.username == null) {
+		// Send error
 		res.status(500).json({ error: "Username is not set" });
 		return;
 	}
 
-	// set username
-	getUserById(id).setUsername(req.body.username);
+	// Get user
+	const user = await getUserById(id);
 
-	// fire updateUser event for WS gateway
+	// Set username
+	user.setUsername(request.body.username, false);
+
+	// Fire updateUser event for WS gateway
 	communicator.emit("updateUser", { user: id });
 });
 
-// export communicator as ESM
+// Export communicator as ESM
 export { communicator as com, router as api };

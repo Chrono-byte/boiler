@@ -1,38 +1,44 @@
-"use strict";
 /*
  * Hammer - A simple WebSocket-based chat server & client written in JavaScript.
  *
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-import { User } from "../structures/structures";
+import { type User } from "../structures/structures";
 
-// users, Map<string, User>
+// Users, Map<string, User>
 const users = new Map<string, User>();
 
-// get user by username function
-function getUserByEmail(username) {
+// Get user by username function, returns a User object, or null if user does not exist
+async function getUserByEmail(email): Promise<User> {
 	const promise1 = new Promise((resolve, reject) => {
-		for (let user of users.values()) {
-			if (user.email == username) {
-				return resolve(user);
+		for (const [, user] of users) {
+			if (user.email == email) {
+				resolve(user);
+				return;
 			}
 		}
 
 		reject("User does not exist");
 	});
 
-	return promise1;
+	return promise1 as Promise<User>;
 }
 
-// get user by id function
-function getUserById(id) {
-	for (let user of users.values()) {
-		if (user.id == id) {
-			return user;
+// Get user by id function, returns a User object
+async function getUserById(id): Promise<User> {
+	const promise1 = new Promise((resolve, reject) => {
+		for (const [, user] of users) {
+			if (user.id == id) {
+				resolve(user);
+				return;
+			}
 		}
-	}
-	return null;
+
+		reject("User does not exist");
+	});
+
+	return promise1 as Promise<User>;
 }
 
 export { users, getUserByEmail, getUserById };

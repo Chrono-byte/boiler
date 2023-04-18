@@ -1,5 +1,3 @@
-"use strict";
-
 /*
  * Hammer - A simple WebSocket-based chat server & client written in JavaScript.
  *
@@ -9,125 +7,149 @@
 // import internal deps
 import generateSnowflake from "../util/snowflake";
 
-// import external deps
-import bcrypt from "bcrypt";
+// Import external deps
 
 // import internal deps
 import { User, Channel } from "../structures/structures";
-
 import { users, getUserById } from "./users";
+import bcrypt from "bcrypt";
 
-// data structure to store channels
+// Data structure to store channels
 const channels = new Map();
 
-// get channel by id function
+// Get channel by id function
 function getChannelById(id) {
-	for (let channel of channels.values()) {
+	for (const channel of channels.values()) {
 		if (channel.id == id) {
 			return channel;
 		}
 	}
+
 	return null;
 }
 
-// get channel by name function
+// Get channel by name function
 function getChannelByName(name) {
-	for (let channel of channels.values()) {
+	for (const channel of channels.values()) {
 		if (channel.name == name) {
 			return channel;
 		}
 	}
+
 	return null;
 }
 
-// add user to database
-function addUser(email, username, password, permissions) {
-	// create promise
+// Add user to database
+async function addUser(email, username, password, permissions) {
+	// Create promise
 	const promise1 = new Promise((resolve, reject) => {
-		// hash password
-		bcrypt.hash(password, 10).then((hash: string) => {
-			var id = generateSnowflake();
+		// Hash password
+		bcrypt
+			.hash(password, 10)
+			.then((hash: string) => {
+				const id = generateSnowflake();
 
-			// add user to database
-			users.set(id, new User(email, username, hash, {
-				ADMINISTRATOR: permissions.ADMINISTRATOR,
-				MANAGE_CHANNELS: permissions.MANAGE_CHANNELS,
-				MANAGE_MESSAGES: permissions.MANAGE_MESSAGES
-			}, id));
+				// Add user to database
+				users.set(
+					id,
+					new User(
+						email,
+						username,
+						hash,
+						{
+							ADMINISTRATOR: permissions.ADMINISTRATOR,
+							MANAGE_CHANNELS: permissions.MANAGE_CHANNELS,
+							MANAGE_MESSAGES: permissions.MANAGE_MESSAGES,
+						},
+						id
+					)
+				);
 
-			// send success
-			resolve(users.get(id));
-		}).catch((err) => {
-			// send error
-			// res.status(500).json({ error: "Error adding user to database" });
-			console.log(err);
-			reject("User does not exist");
-		});
+				// Send success
+				resolve(users.get(id));
+			})
+			.catch((error) => {
+				// Send error
+				// res.status(500).json({ error: "Error adding user to database" });
+				console.log(error);
+				reject("User does not exist");
+			});
 	});
 
 	return promise1;
 }
 
-// check password hash to input password
+// Check password hash to input password
 function checkPassword(password, hash) {
+	// return is of type Promise<boolean>
 	return bcrypt.compare(password, hash);
 }
 
-// function to check user auth
+// Function to check user auth
 function checkTokenAuth(token) {
 	let auth = false;
 
-	// check that token was provided
+	// Check that token was provided
 	if (!token) {
 		return false;
 	}
 
-	// check that the connection is an authorized user
-	users.forEach((user) => {
+	// Check that the connection is an authorized user
+	for (const [, user] of users) {
 		if (user.token == token) {
 			auth = true;
 		}
-	});
-
-	if (auth == false) {
-		return false;
-	} else {
-		// send authorized handshake
-		return true;
 	}
+
+	if (!auth) {
+		return false;
+	}
+
+	// Send authorized handshake
+	return true;
 }
 
-// create channel function
-function createChannel({ name, description }, owner) {
-	// promise to return
+// Create channel function
+async function createChannel({ name, description }, owner) {
+	// Promise to return
 	const promise1 = new Promise((resolve, reject) => {
-		// check if channel exists
-		for (let channel of channels.values()) {
+		// Check if channel exists
+		for (const channel of channels.values()) {
 			if (channel.name == name) {
 				reject("Channel already exists");
 			}
 		}
 
-		// get user from database
-		let user = getUserById(owner).Member;
+		// Get user from database
+		getUserById(owner)
+			.then((user) => {
+				// Channel object
+				const channel = new Channel(
+					name,
+					description,
+					generateSnowflake(),
+					user.Member
+				);
 
-		// channel object
-		let channel = new Channel(name, description, generateSnowflake(), user);
+				channels.set(channel.id, channel);
 
-		channels.set(channel.id, channel);
-
-		resolve(channel);
+				resolve(channel);
+			})
+			.catch((error) => {
+				console.log(error);
+				reject("User does not exist");
+			});
 	});
 
 	return promise1;
 }
 
-// delete channel function
-function deleteChannel(id) {
-	// promise to return
+// Delete channel function
+async function deleteChannel(id) {
+	// Promise to return
 	const promise1 = new Promise((resolve, reject) => {
-		// check if channel exists
-		for (let channel of channels.values()) {
+		// Check if channel exists
+		for (const channel of channels.values()) {
 			if (channel.id == id) {
 				channels.delete(id);
 				resolve("Channel deleted");
@@ -140,32 +162,33 @@ function deleteChannel(id) {
 	return promise1;
 }
 
-// add user to channel function
-function addUserToChannel(id, user) {
-	// get user from database
+// Add user to channel function
+async function addUserToChannel(id, user) {
+	// Get user from database
 	try {
-		user = getUserById(user);
-	} catch (err) {
-		return console.log(err);
+		user = await getUserById(user);
+	} catch (error) {
+		console.log(error);
+		return;
 	}
 
-	// promise to return
+	// Promise to return
 	const promise1 = new Promise((resolve, reject) => {
-		// check if channel exists
-		let channel = getChannelById(id);
+		// Check if channel exists
+		const channel = getChannelById(id);
 
 		if (channel) {
-			// check if user is in channel
-			for (let member of channel.members.values()) {
+			// Check if user is in channel
+			for (const member of channel.members.values()) {
 				if (member.id == user.id) {
 					reject("User is already in channel");
 				}
 			}
 
-			// add user to channel
+			// Add user to channel
 			channel.members.set(user.id, user.Member);
 
-			// add channel to user's channels
+			// Add channel to user's channels
 			user.channels.set(channel.id, channel);
 
 			resolve("User added to channel");
@@ -177,15 +200,15 @@ function addUserToChannel(id, user) {
 	return promise1;
 }
 
-// kick user from channel function
-function kickUserFromChannel(id, user) {
-	// promise to return
+// Kick user from channel function
+async function kickUserFromChannel(id, user) {
+	// Promise to return
 	const promise1 = new Promise((resolve, reject) => {
-		// check if channel exists
-		for (let channel of channels.values()) {
+		// Check if channel exists
+		for (const channel of channels.values()) {
 			if (channel.id == id) {
-				// check if user is in channel
-				for (let member of channel.members.values()) {
+				// Check if user is in channel
+				for (const member of channel.members.values()) {
 					if (member.id == user) {
 						channel.members.delete(user);
 						resolve("User kicked from channel");
@@ -204,21 +227,22 @@ function kickUserFromChannel(id, user) {
 	return promise1;
 }
 
-// get user by token function
+// Get user by token function
 function getUserByToken(token) {
-	for (let user of users.values()) {
+	for (const user of users.values()) {
 		if (user.token == token) {
 			return user;
 		}
 	}
+
 	return null;
 }
 
-// export functions as ESM module
+// Export functions as ESM module
 export default channels;
 
 export {
-	// export functions
+	// Export functions
 	addUser,
 	checkPassword,
 	checkTokenAuth,
