@@ -17,9 +17,8 @@ function socketHandler(
 	}
 
 	try {
-		if (typeof message === "string")
-			// Try to parse the message as JSON
-			message = JSON.parse(message) as { type: string; op: number };
+		// Try to parse the message as JSON
+		message = JSON.parse(message) as { type: string; op: number };
 	} catch {
 		// If the message fails to parse, close the connection
 		console.log(`${username} sent invalid JSON, closing connection.`);

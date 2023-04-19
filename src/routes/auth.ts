@@ -26,11 +26,16 @@ const router = express.Router();
 
 // Login endpoint
 router.post("/login/email", (request, res) => {
-	const username = request.query.email as string;
+	const username = request.query.username as string;
 	const password = request.query.password as string;
 
 	// Check that username and password were provided
 	if (!username || !password) {
+		console.log({
+			username,
+			password
+		});
+
 		res.status(400).json({ error: "Missing username or password" });
 		return;
 	}

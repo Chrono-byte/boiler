@@ -19,7 +19,7 @@ import http from "node:http";
 // Import external deps
 import { getUserById, users } from "./db/users.ts";
 import Banner from "./cmd.ts";
-import { auth } from "./routes/auth.ts";
+import { auth, authRouter } from "./routes/auth.ts";
 import { api, com } from "./routes/api.ts";
 import {
 	checkTokenAuth,
@@ -219,7 +219,7 @@ com.on("updateUser", (object) => {
 });
 
 // Authentication router
-app.use("/auth", auth);
+app.use("/auth", authRouter);
 
 // Api router
 app.use("/api", api);
