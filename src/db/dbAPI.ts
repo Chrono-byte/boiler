@@ -5,7 +5,8 @@
  */
 
 // external imports
-import bcrypt from 'bcrypt';
+// import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 
 // internal imports
 import {
@@ -29,7 +30,7 @@ function getChannelById(id) {
 }
 
 // Get channel by name function
-function getChannelByName(name) {
+function getChannelByName(name: string) {
 	for (const channel of channels.values()) {
 		if (channel.name == name) {
 			return channel;
@@ -73,7 +74,7 @@ function addUser(
 				// Send success
 				resolve(users.get(id));
 			})
-			.catch((error) => {
+			.catch((error: Error) => {
 				// Send error
 				// res.status(500).json({ error: "Error adding user to database" });
 				console.log(error);
@@ -85,13 +86,13 @@ function addUser(
 }
 
 // Check password hash to input password
-function checkPassword(password, hash) {
+function checkPassword(password: string, hash: string) {
 	// return is of type Promise<boolean>
 	return bcrypt.compare(password, hash);
 }
 
 // Function to check user auth
-function checkTokenAuth(token) {
+function checkTokenAuth(token: string) {
 	let auth = false;
 
 	// Check that token was provided
@@ -114,8 +115,11 @@ function checkTokenAuth(token) {
 	return true;
 }
 
-// Create channel function
-async function createChannel({ name, description }, owner) {
+// Create channel function takes in a name and description as object, and the owner's id
+function createChannel(
+	{ name, description }: { name: string; description: string },
+	owner: string
+) {
 	// Promise to return
 	const promise1 = new Promise((resolve, reject) => {
 		// Check if channel exists
@@ -127,7 +131,7 @@ async function createChannel({ name, description }, owner) {
 
 		// Get user from database
 		getUserById(owner)
-			.then((user) => {
+			.then((user: User) => {
 				// Channel object
 				const channel = new Channel(
 					name,
@@ -140,7 +144,7 @@ async function createChannel({ name, description }, owner) {
 
 				resolve(channel);
 			})
-			.catch((error) => {
+			.catch((error: Error) => {
 				console.log(error);
 				reject("User does not exist");
 			});
@@ -150,7 +154,7 @@ async function createChannel({ name, description }, owner) {
 }
 
 // Delete channel function
-async function deleteChannel(id) {
+function deleteChannel(id: string) {
 	// Promise to return
 	const promise1 = new Promise((resolve, reject) => {
 		// Check if channel exists
@@ -168,12 +172,13 @@ async function deleteChannel(id) {
 }
 
 // Add user to channel function
-async function addUserToChannel(id, user) {
+async function addUserToChannel(id: string, user: string) {
 	// Get user from database
-	try {
-		user = await getUserById(user);
-	} catch (error) {
-		console.log(error);
+	const userN = await getUserById(user).catch((err: Error) => {
+		console.log(err);
+	});
+
+	if (!userN) {
 		return;
 	}
 
@@ -185,16 +190,16 @@ async function addUserToChannel(id, user) {
 		if (channel) {
 			// Check if user is in channel
 			for (const member of channel.members.values()) {
-				if (member.id == user.id) {
+				if (member.id == userN.id) {
 					reject("User is already in channel");
 				}
 			}
 
 			// Add user to channel
-			channel.members.set(user.id, user.Member);
+			channel.members.set(userN.id, userN.Member);
 
 			// Add channel to user's channels
-			user.channels.set(channel.id, channel);
+			userN.channels.set(channel.id, channel);
 
 			resolve("User added to channel");
 		} else {
@@ -206,7 +211,7 @@ async function addUserToChannel(id, user) {
 }
 
 // Kick user from channel function
-async function kickUserFromChannel(id, user) {
+function kickUserFromChannel(id: string, user: string) {
 	// Promise to return
 	const promise1 = new Promise((resolve, reject) => {
 		// Check if channel exists
@@ -246,16 +251,16 @@ function getUserByToken(token: string): User | null {
 // Export functions as ESM module
 export default channels;
 
+// Export functions as ESM module
 export {
-	// Export functions
 	addUser,
 	checkPassword,
 	checkTokenAuth,
 	createChannel,
 	deleteChannel,
-	addUserToChannel,
-	kickUserFromChannel,
-	getUserByToken,
 	getChannelById,
 	getChannelByName,
+	getUserByToken,
+	kickUserFromChannel,
+	addUserToChannel,
 };

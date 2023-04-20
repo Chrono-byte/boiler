@@ -8,6 +8,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { EventEmitter } from 'node:events';
+import process from 'node:process';
 
 // internal imports
 import {
@@ -53,9 +54,9 @@ router.get("/", (request, res) => {
 		health: [
 			"OK",
 			{
-				uptime: process.uptime(),
-				mem: process.memoryUsage(),
-				cpu: process.cpuUsage(),
+				// uptime: process.uptime(),
+				// mem: process.memoryUsage(),
+				// cpu: process.cpuUsage(),
 			},
 		],
 

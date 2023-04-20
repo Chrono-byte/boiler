@@ -6,8 +6,11 @@
  */
 
 // internal imports
-import { getUserById } from '../db/users.ts';
-import generateSnowflake from '../util/snowflake.ts';
+import { getUserById } from "../db/users.ts";
+import generateSnowflake from "../util/snowflake.ts";
+
+// external imports
+import WebSocket from "ws";
 
 function testUsername(username: string, bypass: boolean) {
 	// Check that username is a string
@@ -32,7 +35,7 @@ function testUsername(username: string, bypass: boolean) {
 		}
 
 		// Check that username is not taken
-		if (getUserById(username)) {
+		if (getUserById(username) !== null) {
 			return false;
 		}
 
@@ -59,7 +62,7 @@ function testUsername(username: string, bypass: boolean) {
 
 class Message {
 	content: string;
-	author: User | Member;
+	author: Member | null;
 	channel: Channel;
 	createdAt: Date;
 	reply: boolean;
@@ -79,9 +82,8 @@ class Message {
 
 		// Message and author
 		this.content = content;
-		this.author = channel.members.get(author)
-			? channel.members.get(author)
-			: null;
+		// get author from user id if the author exists
+		this.author = channel.members.get(author) || null;
 
 		// Parent channel
 		this.channel = channel;
@@ -112,7 +114,7 @@ class Member {
 	username: string;
 	id: string;
 	joinedAt: Date;
-	avatarURL: string;
+	avatarURL: string | undefined;
 	permissions: PermissionsObject;
 	constructor(user: User) {
 		// Identity
@@ -131,18 +133,18 @@ class Member {
 class User {
 	email: string;
 	hash: string;
-	salt: string;
+	salt: string | undefined;
 	username: string;
 	id: string;
 	joinedAt: Date;
-	avatarURL: string;
+	avatarURL: string | undefined;
 	permissions: PermissionsObject;
-	token: string;
+	token: string | undefined | null;
 	// This needs to be changed to have our custom .json middleware socket
 	socket: WebSocket & { json: (data: unknown) => void };
 	Member: Member;
 	channels: Map<string, Channel>;
-	handshakeComplete: boolean;
+	handshakeComplete: boolean | undefined;
 	constructor(
 		email: string,
 		username: string,
@@ -153,7 +155,6 @@ class User {
 		// Account auth info
 		this.email = email as string;
 		this.hash = hash as string;
-		this.salt = null;
 
 		// Identity
 
@@ -168,7 +169,6 @@ class User {
 
 		// Public info
 		this.joinedAt = new Date();
-		this.avatarURL = null;
 
 		// Server level permissions
 		this.permissions = {
@@ -328,6 +328,9 @@ class Channel {
 	async sendAll(message: Message, from: string) {
 		// Check if from is set
 		if (!from) {
+			if (!message.author) {
+				throw new Error("Message must have an author.");
+			}
 			from = message.author.id;
 		}
 
@@ -368,20 +371,13 @@ class Channel {
 	}
 
 	deleteMessage(
-		message: Message | undefined,
+		message: Message,
 		user: { permissions: { MANAGE_MESSAGES: boolean }; id: string }
 	) {
-		// Check that message exists
-		if (!this.messages.has(message.id)) {
-			throw new Error("Message does not exist.");
-		}
-
-		message = this.messages.get(message.id);
-
 		// Check that the user has permission to delete messages
 		if (
 			!user.permissions.MANAGE_MESSAGES ||
-			user.id !== message.author.id
+			user.id !== message.author?.id
 		) {
 			throw new Error(
 				"You do not have permission to delete this message."

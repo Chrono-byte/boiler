@@ -4,9 +4,11 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
+// external imports
 import jwt from 'jsonwebtoken';
+import WebSocket from 'ws';
 
-
+// internal imports
 import channels, {
     checkTokenAuth
 } from './db/dbAPI.ts';

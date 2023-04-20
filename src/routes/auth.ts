@@ -5,75 +5,87 @@
  */
 
 // external imports
-import dotenv from 'dotenv';
-import express from 'express';
-import jwt from 'jsonwebtoken';
+import dotenv from "dotenv";
+import express from "express";
+import jwt from "jsonwebtoken";
+import http from "node:http";
+import process from "node:process";
 
 // internal imports
 import {
-    addUser, checkPassword, checkTokenAuth,
-    getUserByToken
-} from '../db/dbAPI.ts';
-import { getUserByEmail } from '../db/users.ts';
-import { type User } from '../structures/structures.ts';
+	addUser,
+	checkPassword,
+	checkTokenAuth,
+	getUserByToken,
+} from "../db/dbAPI.ts";
+import { getUserByEmail } from "../db/users.ts";
+import { type User } from "../structures/structures.ts";
 
 dotenv.config();
 
 // Create router
 const router = express.Router();
 
+class requestType extends http.IncomingMessage {
+	// how preinitialize the query object
+	query: { username: string; password: string; } | any;
+}
+
 // Login endpoint
-router.post("/login/email", (request, res) => {
-	const username = request.query.username as string;
-	const password = request.query.password as string;
+router.post(
+	"/login/email",
+	(request: requestType, res: any) => {
+		const username = request.query.username as string;
+		const password = request.query.password as string;
 
-	// Check that username and password were provided
-	if (!username || !password) {
-		console.log({
-			username,
-			password
-		});
+		// Check that username and password were provided
+		if (!username || !password) {
+			console.log({
+				username,
+				password,
+			});
 
-		res.status(400).json({ error: "Missing username or password" });
-		return;
-	}
+			res.status(400).json({ error: "Missing username or password" });
+			return;
+		}
 
-	getUserByEmail(username)
-		.then((user: User) => {
-			// Check if password is correct
-			if (checkPassword(password, user.hash)) {
-				// Generate token
-				const token = jwt.sign(
-					{
+		getUserByEmail(username)
+			.then(async (user: User) => {
+				// Check if password is correct
+				if (await checkPassword(password, user.hash) == true) {
+					// Generate token
+					const token = jwt.sign(
+						{
+							username: user.username,
+							id: user.id,
+							permissions: user.permissions,
+						},
+						process.env.JWT_SECRET,
+						{
+							expiresIn: "12h",
+						}
+					);
+
+					// Assign token to user
+					user.token = token;
+
+					// Send token
+					res.status(200).json({
+						token,
 						username: user.username,
 						id: user.id,
-						permissions: user.permissions,
-					},
-					process.env.JWT_SECRET,
-					{
-						expiresIn: "12h",
-					}
-				);
+					});
+				} else {
+					res.status(401).json({ error: "Incorrect password" });
+				}
+			})
+			.catch((error) => {
+				console.log(error);
 
-				// Assign token to user
-				user.token = token;
-
-				// Send token
-				res.status(200).json({
-					token,
-					username: user.username,
-					id: user.id,
-				});
-			} else {
-				res.status(401).json({ error: "Incorrect password" });
-			}
-		})
-		.catch((error) => {
-			console.log(error);
-
-			return res.status(401).json({ error: "User does not exist" });
-		});
-});
+				return res.status(401).json({ error: "User does not exist" });
+			});
+	}
+);
 
 // Register endpoint
 router.post("/register", (request, res) => {

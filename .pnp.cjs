@@ -32,7 +32,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/cors", "npm:2.8.13"],\
             ["@types/express", "npm:4.17.17"],\
             ["@types/jsonwebtoken", "npm:9.0.1"],\
-            ["@types/node", "npm:18.15.11"],\
+            ["@types/node", "npm:18.15.12"],\
             ["@types/uuid", "npm:9.0.1"],\
             ["@types/ws", "npm:8.5.4"],\
             ["@typescript-eslint/eslint-plugin", "virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:5.59.0"],\
@@ -330,7 +330,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-bcrypt-npm-5.0.0-c074c165c2-063c32c7a5.zip/node_modules/@types/bcrypt/",\
           "packageDependencies": [\
             ["@types/bcrypt", "npm:5.0.0"],\
-            ["@types/node", "npm:18.15.11"]\
+            ["@types/node", "npm:18.15.12"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -341,7 +341,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@types/body-parser", "npm:1.19.2"],\
             ["@types/connect", "npm:3.4.35"],\
-            ["@types/node", "npm:18.15.11"]\
+            ["@types/node", "npm:18.15.12"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -351,7 +351,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-connect-npm-3.4.35-7337eee0a3-fe81351470.zip/node_modules/@types/connect/",\
           "packageDependencies": [\
             ["@types/connect", "npm:3.4.35"],\
-            ["@types/node", "npm:18.15.11"]\
+            ["@types/node", "npm:18.15.12"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -361,7 +361,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-cors-npm-2.8.13-4b8ac1068f-7ef197ea19.zip/node_modules/@types/cors/",\
           "packageDependencies": [\
             ["@types/cors", "npm:2.8.13"],\
-            ["@types/node", "npm:18.15.11"]\
+            ["@types/node", "npm:18.15.12"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -384,7 +384,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-express-serve-static-core-npm-4.17.33-0366bd5654-dce580d16b.zip/node_modules/@types/express-serve-static-core/",\
           "packageDependencies": [\
             ["@types/express-serve-static-core", "npm:4.17.33"],\
-            ["@types/node", "npm:18.15.11"],\
+            ["@types/node", "npm:18.15.12"],\
             ["@types/qs", "npm:6.9.7"],\
             ["@types/range-parser", "npm:1.2.4"]\
           ],\
@@ -414,7 +414,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-jsonwebtoken-npm-9.0.1-5f660fdf38-a7f0925e9a.zip/node_modules/@types/jsonwebtoken/",\
           "packageDependencies": [\
             ["@types/jsonwebtoken", "npm:9.0.1"],\
-            ["@types/node", "npm:18.15.11"]\
+            ["@types/node", "npm:18.15.12"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -429,10 +429,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["@types/node", [\
-        ["npm:18.15.11", {\
-          "packageLocation": "./.yarn/cache/@types-node-npm-18.15.11-fd8ceaaffd-977b4ad047.zip/node_modules/@types/node/",\
+        ["npm:18.15.12", {\
+          "packageLocation": "./.yarn/cache/@types-node-npm-18.15.12-c785f88018-dff7596db8.zip/node_modules/@types/node/",\
           "packageDependencies": [\
-            ["@types/node", "npm:18.15.11"]\
+            ["@types/node", "npm:18.15.12"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -470,7 +470,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@types/serve-static", "npm:1.15.1"],\
             ["@types/mime", "npm:3.0.1"],\
-            ["@types/node", "npm:18.15.11"]\
+            ["@types/node", "npm:18.15.12"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -489,7 +489,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-ws-npm-8.5.4-c0237574ef-fefbad20d2.zip/node_modules/@types/ws/",\
           "packageDependencies": [\
             ["@types/ws", "npm:8.5.4"],\
-            ["@types/node", "npm:18.15.11"]\
+            ["@types/node", "npm:18.15.12"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -1004,7 +1004,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/cors", "npm:2.8.13"],\
             ["@types/express", "npm:4.17.17"],\
             ["@types/jsonwebtoken", "npm:9.0.1"],\
-            ["@types/node", "npm:18.15.11"],\
+            ["@types/node", "npm:18.15.12"],\
             ["@types/uuid", "npm:9.0.1"],\
             ["@types/ws", "npm:8.5.4"],\
             ["@typescript-eslint/eslint-plugin", "virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:5.59.0"],\
@@ -1692,7 +1692,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-import-resolver-node", "npm:0.3.7"],\
             ["debug", "virtual:220870497d8f4e11bae4239a4c66d6b4664b664e91579ad086fbff8ac9b0dd6abf345193c67e47305cb88bd705fc77535c2fc19c1df27afb4cf12e601dd1c239#npm:3.2.7"],\
             ["is-core-module", "npm:2.12.0"],\
-            ["resolve", "patch:resolve@npm%3A1.22.3#~builtin<compat/resolve>::version=1.22.3&hash=c3c19d"]\
+            ["resolve", "patch:resolve@npm%3A1.22.2#~builtin<compat/resolve>::version=1.22.2&hash=c3c19d"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -1828,7 +1828,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["is-glob", "npm:4.0.3"],\
             ["minimatch", "npm:3.1.2"],\
             ["object.values", "npm:1.1.6"],\
-            ["resolve", "patch:resolve@npm%3A1.22.3#~builtin<compat/resolve>::version=1.22.3&hash=c3c19d"],\
+            ["resolve", "patch:resolve@npm%3A1.22.2#~builtin<compat/resolve>::version=1.22.2&hash=c3c19d"],\
             ["semver", "npm:6.3.0"],\
             ["tsconfig-paths", "npm:3.14.2"]\
           ],\
@@ -3776,10 +3776,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["resolve", [\
-        ["patch:resolve@npm%3A1.22.3#~builtin<compat/resolve>::version=1.22.3&hash=c3c19d", {\
-          "packageLocation": "./.yarn/cache/resolve-patch-bb62d3c3c5-ad59734723.zip/node_modules/resolve/",\
+        ["patch:resolve@npm%3A1.22.2#~builtin<compat/resolve>::version=1.22.2&hash=c3c19d", {\
+          "packageLocation": "./.yarn/cache/resolve-patch-f4c4056507-66cc788f13.zip/node_modules/resolve/",\
           "packageDependencies": [\
-            ["resolve", "patch:resolve@npm%3A1.22.3#~builtin<compat/resolve>::version=1.22.3&hash=c3c19d"],\
+            ["resolve", "patch:resolve@npm%3A1.22.2#~builtin<compat/resolve>::version=1.22.2&hash=c3c19d"],\
             ["is-core-module", "npm:2.12.0"],\
             ["path-parse", "npm:1.0.7"],\
             ["supports-preserve-symlinks-flag", "npm:1.0.0"]\
@@ -4248,7 +4248,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@tsconfig/node12", "npm:1.0.11"],\
             ["@tsconfig/node14", "npm:1.0.3"],\
             ["@tsconfig/node16", "npm:1.0.3"],\
-            ["@types/node", "npm:18.15.11"],\
+            ["@types/node", "npm:18.15.12"],\
             ["@types/swc__core", null],\
             ["@types/swc__wasm", null],\
             ["@types/typescript", null],\

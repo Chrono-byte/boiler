@@ -5,32 +5,37 @@
  */
 
 // external imports
-import cors from 'cors';
-import dotenv from 'dotenv';
-import express from 'express';
-import jwt from 'jsonwebtoken';
-import http from 'node:http';
-import { type AddressInfo } from 'node:net';
-import path from 'node:path';
-import { EventEmitter } from 'node:stream';
-import { Server } from 'ws';
+import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
+import jwt from "jsonwebtoken";
+import http from "node:http";
+import { type AddressInfo } from "node:net";
+import path from "node:path";
+import { EventEmitter } from "node:stream";
+import WebSocket, { WebSocketServer } from "ws";
 
 // internal imports
-import Banner from './cmd.ts';
+import Banner from "./cmd.ts";
 import {
-    addUser, addUserToChannel, checkTokenAuth,
-    createChannel, getChannelById, getUserByToken
-} from './db/dbAPI.ts';
-import {
-    getUserById, users
-} from './db/users.ts';
-import { api, com } from './routes/api.ts';
-import { authRouter } from './routes/auth.ts';
-import socketHandler from './socket.ts';
-import {
-	type Channel,
-	type User
-} from './structures/structures.ts';
+	addUser,
+	addUserToChannel,
+	checkTokenAuth,
+	createChannel,
+	getChannelById,
+	getUserByToken,
+} from "./db/dbAPI.ts";
+import { getUserById, users } from "./db/users.ts";
+import { api, com } from "./routes/api.ts";
+import { authRouter } from "./routes/auth.ts";
+import socketHandler from "./socket.ts";
+import { type Channel, type User } from "./structures/structures.ts";
+
+// process
+import process from "node:process";
+
+// Will contain trailing slash
+// const __dirname = new URL(".", import.meta.url).pathname;
 
 // check that we're running Node.js 18 or higher
 if (Number.parseInt(process.versions.node.split(".")[0]) < 18) {
@@ -44,7 +49,9 @@ dotenv.config();
 const port = Number.parseInt(process.argv[2]) || 8080;
 
 // Create a new websocket server
-const wss = new Server({ port });
+const wss = new WebSocketServer({
+	port: port,
+});
 const app = express();
 
 // Allow CORS
@@ -56,13 +63,13 @@ wss.on(
 	"connection",
 	(
 		ws: WebSocket & { json: (data: unknown) => void } & EventEmitter,
-		request: http.IncomingMessage
+		request: http.IncomingMessage & { url: string }
 	) => {
 		const url = new URL(request.url, `http://${request.headers.host}`);
 		const token = url.searchParams.get("token");
 
 		// Add json helper function
-		ws.json = (data) => {
+		ws.json = (data: JSON) => {
 			ws.send(JSON.stringify(data));
 		};
 
@@ -78,6 +85,10 @@ wss.on(
 		if (auth) {
 			// See if the user is already connected
 			const user = getUserByToken(token);
+
+			if (!user) {
+				return ws.close();
+			}
 
 			// If the user is already connected, close the connection
 			if (user.socket) {
@@ -97,7 +108,7 @@ wss.on(
 			return ws.close();
 		}
 
-		let username;
+		let username: string;
 		// Get the username from the token
 		try {
 			type Token = {
@@ -122,6 +133,10 @@ wss.on(
 		// Get the user from the database
 		const user = getUserByToken(token);
 
+		if (!user) {
+			return ws.close();
+		}
+
 		// Set the user's token & socket
 		user.token = token;
 		user.socket = ws;
@@ -131,7 +146,9 @@ wss.on(
 		user.handshakeComplete = false;
 
 		// Handle messages
-		ws.on("message", (message) => socketHandler(message, { ws, user }));
+		ws.on("message", (message: JSON) =>
+			socketHandler(message, { ws, user })
+		);
 
 		// Handle close, cleans User's socket & token, and removes the handshake complete variable
 		ws.on("close", () => {

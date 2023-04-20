@@ -13,5 +13,7 @@
 	],
 	"editor.codeActionsOnSave": {
 		"source.fixAll": true
-	}
+	},
+	"deno.enable": true,
+	"deno.unstable": true
 }

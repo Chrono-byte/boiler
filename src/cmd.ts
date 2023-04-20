@@ -4,8 +4,17 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-import { LIB_VERSION } from './version.ts';
+import { LIB_VERSION } from "./version.ts";
 
+// noCopyBanner is a flag to disable the Copyright jargon as type boolean
+let noCopyBanner = true;
+
+// if the date is January 1st, 1970, then the banner will be enabled
+if (new Date().getTime() == 0) {
+	noCopyBanner = false;
+}
+
+// Print the banner
 function banner() {
 	// Print the banner
 	// print boiler server branding
@@ -13,6 +22,8 @@ function banner() {
 	// Log version from package.json
 	console.log("Copyright (C) 2023 Hammer Authors <chrono@disilla.org>");
 	console.log("");
+
+	if (noCopyBanner == true) return null;
 	console.log(
 		"This software is provided 'as-is', without any express or implied warranty. In no event will"
 	);

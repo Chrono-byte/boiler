@@ -1,45 +1,45 @@
 {
-  "name": "boiler",
-  "packageManager": "yarn@3.5.0",
-  "version": "1.4.0",
-  "private": true,
-  "license": "zlib-acknowledgement",
-  "author": "chrono <chrono@disilla.org>",
-  "main": "src/server.ts",
-  "scripts": {
-    "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix",
-    "start": "ts-node .",
-    "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
-    "build": "tsc"
-  },
-  "dependencies": {
-    "bcrypt": "^5.1.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.0",
-    "uuid": "^9.0.0",
-    "ws": "^8.13.0"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^5.0.0",
-    "@types/cors": "^2.8.13",
-    "@types/express": "^4.17.17",
-    "@types/jsonwebtoken": "^9.0.1",
-    "@types/node": "^18.15.11",
-    "@types/uuid": "^9.0.1",
-    "@types/ws": "^8.5.4",
-    "@typescript-eslint/eslint-plugin": "^5.59.0",
-    "@typescript-eslint/parser": "^5.59.0",
-    "eslint": "^8.38.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-import-resolver-typescript": "^3.5.5",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-prettier": "^4.2.1",
-    "prettier": "^2.8.7",
-    "ts-node": "^10.9.1",
-    "tslib": "^2.5.0",
-    "typescript": "^5.0.4"
-  }
+	"name": "boiler",
+	"packageManager": "yarn@3.5.0",
+	"version": "1.4.0",
+	"private": true,
+	"license": "zlib-acknowledgement",
+	"author": "chrono <chrono@disilla.org>",
+	"main": "src/server.ts",
+	"scripts": {
+		"lint": "eslint ./src",
+		"lint:fix": "eslint ./src --fix",
+		"start": "ts-node .",
+		"prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
+		"build": "tsc"
+	},
+	"dependencies": {
+		"bcrypt": "^5.1.0",
+		"cors": "^2.8.5",
+		"dotenv": "^16.0.3",
+		"express": "^4.18.2",
+		"jsonwebtoken": "^9.0.0",
+		"uuid": "^9.0.0",
+		"ws": "^8.13.0"
+	},
+	"devDependencies": {
+		"@types/bcrypt": "^5.0.0",
+		"@types/cors": "^2.8.13",
+		"@types/express": "^4.17.17",
+		"@types/jsonwebtoken": "^9.0.1",
+		"@types/node": "^18.15.11",
+		"@types/uuid": "^9.0.1",
+		"@types/ws": "^8.5.4",
+		"@typescript-eslint/eslint-plugin": "^5.59.0",
+		"@typescript-eslint/parser": "^5.59.0",
+		"eslint": "^8.38.0",
+		"eslint-config-prettier": "^8.8.0",
+		"eslint-import-resolver-typescript": "^3.5.5",
+		"eslint-plugin-import": "^2.27.5",
+		"eslint-plugin-prettier": "^4.2.1",
+		"prettier": "^2.8.7",
+		"ts-node": "^10.9.1",
+		"tslib": "^2.5.0",
+		"typescript": "^5.0.4"
+	}
 }
