@@ -10,7 +10,8 @@
 	"scripts": {
 		"lint": "eslint ./src",
 		"lint:fix": "eslint ./src --fix",
-		"start": "ts-node .",
+		"node:start": "ts-node .",
+		"start": "deno run --allow-read --unstable --allow-env --allow-net ./src/server.ts",
 		"prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
 		"build": "tsc"
 	},
