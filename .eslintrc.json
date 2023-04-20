@@ -2,13 +2,38 @@
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended"
+		// "prettier",
+		// "plugin:import/recommended",
+		// "plugin:import/typescript"
 	],
-	"plugins": ["@typescript-eslint"],
+	"plugins": [
+		"@typescript-eslint"
+		// "import"
+	],
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
 		"project": true,
 		"tsconfigRootDir": "__dirname"
 	},
 	"root": true,
-	"ignorePatterns": ["!.eslintrc.cjs"]
+	"ignorePatterns": [
+		"!.eslintrc.cjs"
+	],
+	"rules": {
+		"sort-imports": [
+			"error",
+			{
+				"ignoreCase": false,
+				"ignoreDeclarationSort": true, // don"t want to sort import lines, use eslint-plugin-import instead
+				"ignoreMemberSort": false,
+				"memberSyntaxSortOrder": [
+					"none",
+					"all",
+					"multiple",
+					"single"
+				],
+				"allowSeparatedGroups": true
+			}
+		]
+	}
 }

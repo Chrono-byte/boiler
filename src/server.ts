@@ -19,15 +19,15 @@ import http from "node:http";
 // Import external deps
 import { getUserById, users } from "./db/users.ts";
 import Banner from "./cmd.ts";
-import { auth, authRouter } from "./routes/auth.ts";
+import { authRouter } from "./routes/auth.ts";
 import { api, com } from "./routes/api.ts";
 import {
-	checkTokenAuth,
-	getUserByToken,
-	getChannelById,
-	addUserToChannel,
 	addUser,
+	addUserToChannel,
+	checkTokenAuth,
 	createChannel,
+	getChannelById,
+	getUserByToken,
 } from "./db/dbAPI.ts";
 import socketHandler from "./socket.ts";
 import { type Channel, type User } from "./structures/structures.ts";
@@ -130,8 +130,10 @@ wss.on(
 		// Handshake complete variable
 		user.handshakeComplete = false;
 
+		// Handle messages
 		ws.on("message", (message) => socketHandler(message, { ws, user }));
 
+		// Handle close, cleans User's socket & token, and removes the handshake complete variable
 		ws.on("close", () => {
 			console.log(`${username} has left the server.`);
 

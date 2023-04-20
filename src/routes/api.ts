@@ -16,12 +16,12 @@ import { LIB_VERSION as npm_package_version } from "../version.ts";
 
 // Import database functions
 import {
-	getChannelById,
-	getChannelByName,
+	addUserToChannel,
 	createChannel,
 	deleteChannel,
+	getChannelById,
+	getChannelByName,
 	kickUserFromChannel,
-	addUserToChannel,
 } from "../db/dbAPI.ts";
 import { getUserById } from "../db/users.ts";
 import { auth } from "./auth.ts";

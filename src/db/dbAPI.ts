@@ -10,8 +10,8 @@ import generateSnowflake from "../util/snowflake.ts";
 // Import external deps
 
 // import internal deps
-import { User, Channel, PermissionsObject } from "../structures/structures.ts";
-import { users, getUserById } from "./users.ts";
+import { Channel, PermissionsObject, User } from "../structures/structures.ts";
+import { getUserById, users } from "./users.ts";
 import bcrypt from "bcrypt";
 
 // Data structure to store channels

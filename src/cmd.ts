@@ -10,8 +10,6 @@ function banner() {
 	// Print the banner
 	// print boiler server branding
 	console.log(`Boiler - Version ${LIB_VERSION}`);
-	// Print hammer branding
-	console.log("Hammer - A simple WebSocket-based chat server & client.");
 	// Log version from package.json
 	console.log("Copyright (C) 2023 Hammer Authors <chrono@disilla.org>");
 	console.log("");
