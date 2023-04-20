@@ -5,12 +5,14 @@
  */
 
 import jwt from 'jsonwebtoken';
+
+
 import channels, {
-    checkTokenAuth,
+    checkTokenAuth
 } from './db/dbAPI.ts';
 import { users } from './db/users.ts';
 import {
-    Message, User,
+    Message, User
 } from './structures/structures.ts';
 
 function socketHandler(

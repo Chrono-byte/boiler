@@ -4,9 +4,12 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
+// external imports
 import bcrypt from 'bcrypt';
+
+// internal imports
 import {
-    Channel, PermissionsObject, User,
+    Channel, PermissionsObject, User
 } from '../structures/structures.ts';
 import generateSnowflake from '../util/snowflake.ts';
 import { getUserById, users } from './users.ts';

@@ -4,18 +4,19 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
+// external imports
 import dotenv from 'dotenv';
 import express from 'express';
 import { EventEmitter } from 'node:events';
+
+// internal imports
 import {
     addUserToChannel, createChannel,
     deleteChannel, getChannelById,
-    getChannelByName, kickUserFromChannel,
+    getChannelByName, kickUserFromChannel
 } from '../db/dbAPI.ts';
 import { getUserById } from '../db/users.ts';
-import {
-    User,
-} from '../structures/structures.ts';
+import { User } from '../structures/structures.ts';
 import { LIB_VERSION as npm_package_version } from '../version.ts';
 import { auth } from './auth.ts';
 

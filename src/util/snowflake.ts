@@ -4,6 +4,7 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
+// external imports
 import { v4 as uuidv4 } from 'uuid';
 
 // The return type of this function is a string

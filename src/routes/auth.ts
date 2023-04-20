@@ -4,12 +4,15 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
+// external imports
 import dotenv from 'dotenv';
 import express from 'express';
 import jwt from 'jsonwebtoken';
+
+// internal imports
 import {
     addUser, checkPassword, checkTokenAuth,
-    getUserByToken,
+    getUserByToken
 } from '../db/dbAPI.ts';
 import { getUserByEmail } from '../db/users.ts';
 import { type User } from '../structures/structures.ts';

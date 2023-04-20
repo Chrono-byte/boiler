@@ -4,6 +4,7 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
+// external imports
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -13,18 +14,23 @@ import { type AddressInfo } from 'node:net';
 import path from 'node:path';
 import { EventEmitter } from 'node:stream';
 import { Server } from 'ws';
+
+// internal imports
 import Banner from './cmd.ts';
 import {
     addUser, addUserToChannel, checkTokenAuth,
-    createChannel, getChannelById, getUserByToken,
+    createChannel, getChannelById, getUserByToken
 } from './db/dbAPI.ts';
 import {
-    getUserById, users,
+    getUserById, users
 } from './db/users.ts';
 import { api, com } from './routes/api.ts';
 import { authRouter } from './routes/auth.ts';
 import socketHandler from './socket.ts';
-import { type Channel, type User } from './structures/structures.ts';
+import {
+	type Channel,
+	type User
+} from './structures/structures.ts';
 
 // check that we're running Node.js 18 or higher
 if (Number.parseInt(process.versions.node.split(".")[0]) < 18) {

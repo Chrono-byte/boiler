@@ -4,6 +4,7 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
+// internal imports
 import { type User } from '../structures/structures.ts';
 
 // Users, Map<string, User>

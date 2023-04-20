@@ -5,6 +5,7 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
+// internal imports
 import { getUserById } from '../db/users.ts';
 import generateSnowflake from '../util/snowflake.ts';
 
