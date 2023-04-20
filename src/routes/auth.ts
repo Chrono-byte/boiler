@@ -6,9 +6,8 @@
 
 // external imports
 import dotenv from "dotenv";
-import express from "express";
+import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import http from "node:http";
 import process from "node:process";
 
 // internal imports
@@ -17,7 +16,7 @@ import {
 	checkPassword,
 	checkTokenAuth,
 	getUserByToken,
-} from "../db/dbAPI.ts";
+} from "../db/db.ts";
 import { getUserByEmail } from "../db/users.ts";
 import { type User } from "../structures/structures.ts";
 
@@ -26,17 +25,23 @@ dotenv.config();
 // Create router
 const router = express.Router();
 
-class requestType extends http.IncomingMessage {
-	// how preinitialize the query object
-	query: { username: string; password: string; } | any;
-}
-
 // Login endpoint
 router.post(
 	"/login/email",
-	(request: requestType, res: any) => {
+	(
+		request: Request & {
+			authenticated: boolean;
+			query: { username: string; password: string };
+		},
+		res: Response
+	) => {
 		const username = request.query.username as string;
 		const password = request.query.password as string;
+
+		console.log({
+			username,
+			password,
+		});
 
 		// Check that username and password were provided
 		if (!username || !password) {
@@ -52,7 +57,7 @@ router.post(
 		getUserByEmail(username)
 			.then(async (user: User) => {
 				// Check if password is correct
-				if (await checkPassword(password, user.hash) == true) {
+				if ((await checkPassword(password, user.hash)) == true) {
 					// Generate token
 					const token = jwt.sign(
 						{
@@ -88,44 +93,60 @@ router.post(
 );
 
 // Register endpoint
-router.post("/register", (request, res) => {
-	// Get email, username, and password from request
-	const email = request.query.email as string;
-	const username = request.query.username as string;
-	const password = request.query.password as string;
+router.post(
+	"/register",
+	(
+		request: Request & {
+			authenticated: boolean;
+			query: { username: string; password: string };
+		},
+		res: Response
+	) => {
+		// Get email, username, and password from request
+		const email = request.query.email as string;
+		const username = request.query.username as string;
+		const password = request.query.password as string;
 
-	// Log email, username, and password
-	console.log({ email, username, password });
+		// Log email, username, and password
+		console.log({ email, username, password });
 
-	// Check if user exists in database
-	getUserByEmail(username)
-		.then((user) => {
-			// Check if user exists
-			if (user) {
-				// Send error
-				res.status(500).json({ error: "User already exists" });
-			}
-		})
-		.catch(() => {
-			// Add user to database
-			addUser(email, username, password, {
-				ADMINISTRATOR: false,
-				MANAGE_CHANNELS: false,
-				MANAGE_MESSAGES: false,
-			})
-				.then(() => {
-					// Send success
-					res.json({ success: true });
-				})
-				.catch((error) => {
+		// Check if user exists in database
+		getUserByEmail(username)
+			.then((user) => {
+				// Check if user exists
+				if (user) {
 					// Send error
-					res.status(500).json({ error });
-				});
-		});
-});
+					res.status(500).json({ error: "User already exists" });
+				}
+			})
+			.catch(() => {
+				// Add user to database
+				addUser(email, username, password, {
+					ADMINISTRATOR: false,
+					MANAGE_CHANNELS: false,
+					MANAGE_MESSAGES: false,
+				})
+					.then(() => {
+						// Send success
+						res.json({ success: true });
+					})
+					.catch((error) => {
+						// Send error
+						res.status(500).json({ error });
+					});
+			});
+	}
+);
 
 // Authentication middleware, checks if user is logged in & redirects to login page if not, otherwise continues to next middleware
-const auth = (request, res, next) => {
+const auth = (
+	request: Request & {
+		authenticated: boolean;
+		query: { username: string; password: string };
+	},
+	res: Response,
+	next: () => void
+) => {
 	// Get token from request
 	const token = request.headers.authorization;
 

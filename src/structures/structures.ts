@@ -133,7 +133,6 @@ class Member {
 class User {
 	email: string;
 	hash: string;
-	salt: string | undefined;
 	username: string;
 	id: string;
 	joinedAt: Date;

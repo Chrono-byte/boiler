@@ -6,20 +6,19 @@
 
 // external imports
 // import bcrypt from 'bcrypt';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 // internal imports
-import {
-    Channel, PermissionsObject, User
-} from '../structures/structures.ts';
-import generateSnowflake from '../util/snowflake.ts';
-import { getUserById, users } from './users.ts';
+import { Channel, PermissionsObject, User } from "../structures/structures.ts";
+import generateSnowflake from "../util/snowflake.ts";
+import { getUserById, users } from "./users.ts";
 
 // Data structure to store channels
 const channels = new Map();
 
 // Get channel by id function
-function getChannelById(id) {
+// deno-lint-ignore no-explicit-any
+function getChannelById(id: any) {
 	for (const channel of channels.values()) {
 		if (channel.id == id) {
 			return channel;
@@ -40,18 +39,24 @@ function getChannelByName(name: string) {
 	return null;
 }
 
-// Add user to database
-function addUser(
+// how to set the return type of a function
+// https://stackoverflow.com/questions/42701129/how-to-set-the-return-type-of-a-function-in-typescript
+
+// Add user to database, returns a promise<User> ASYNC
+async function addUser(
 	email: string,
 	username: string,
 	password: string,
 	permissions: PermissionsObject
-) {
+): Promise<User> {
+	// Salt for password
+	const salt = await bcrypt.genSalt(10);
+
 	// Create promise
 	const promise1 = new Promise((resolve, reject) => {
 		// Hash password
 		bcrypt
-			.hash(password, 10)
+			.hash(password, salt)
 			.then((hash: string) => {
 				const id = generateSnowflake();
 
@@ -75,24 +80,21 @@ function addUser(
 				resolve(users.get(id));
 			})
 			.catch((error: Error) => {
-				// Send error
-				// res.status(500).json({ error: "Error adding user to database" });
-				console.log(error);
-				reject("User does not exist");
+				if (error) reject(false);
 			});
 	});
 
-	return promise1;
+	return promise1 as Promise<User>;
 }
 
 // Check password hash to input password
-function checkPassword(password: string, hash: string) {
+function checkPassword(password: string, hash: string): Promise<boolean> {
 	// return is of type Promise<boolean>
 	return bcrypt.compare(password, hash);
 }
 
 // Function to check user auth
-function checkTokenAuth(token: string) {
+function checkTokenAuth(token: string): boolean {
 	let auth = false;
 
 	// Check that token was provided
@@ -119,7 +121,7 @@ function checkTokenAuth(token: string) {
 function createChannel(
 	{ name, description }: { name: string; description: string },
 	owner: string
-) {
+): Promise<Channel> {
 	// Promise to return
 	const promise1 = new Promise((resolve, reject) => {
 		// Check if channel exists
@@ -150,11 +152,11 @@ function createChannel(
 			});
 	});
 
-	return promise1;
+	return promise1 as Promise<Channel>;
 }
 
 // Delete channel function
-function deleteChannel(id: string) {
+function deleteChannel(id: string): Promise<string> {
 	// Promise to return
 	const promise1 = new Promise((resolve, reject) => {
 		// Check if channel exists
@@ -168,18 +170,18 @@ function deleteChannel(id: string) {
 		reject("Channel does not exist");
 	});
 
-	return promise1;
+	return promise1 as Promise<string>;
 }
 
 // Add user to channel function
-async function addUserToChannel(id: string, user: string) {
+async function addUserToChannel(id: string, user: string): Promise<string> {
 	// Get user from database
 	const userN = await getUserById(user).catch((err: Error) => {
 		console.log(err);
 	});
 
 	if (!userN) {
-		return;
+		return "User does not exist";
 	}
 
 	// Promise to return
@@ -207,11 +209,11 @@ async function addUserToChannel(id: string, user: string) {
 		}
 	});
 
-	return promise1;
+	return promise1 as Promise<string>;
 }
 
 // Kick user from channel function
-function kickUserFromChannel(id: string, user: string) {
+function kickUserFromChannel(id: string, user: string): Promise<string> {
 	// Promise to return
 	const promise1 = new Promise((resolve, reject) => {
 		// Check if channel exists
@@ -234,7 +236,7 @@ function kickUserFromChannel(id: string, user: string) {
 		reject("Channel does not exist");
 	});
 
-	return promise1;
+	return promise1 as Promise<string>;
 }
 
 // Get user by token function

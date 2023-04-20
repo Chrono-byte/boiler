@@ -7,18 +7,19 @@
 // external imports
 import jwt from 'jsonwebtoken';
 import WebSocket from 'ws';
+import process from 'node:process';
 
 // internal imports
 import channels, {
     checkTokenAuth
-} from './db/dbAPI.ts';
+} from './db/db.ts';
 import { users } from './db/users.ts';
 import {
     Message, User
 } from './structures/structures.ts';
 
 function socketHandler(
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// deno-lint-ignore no-explicit-any
 	message: any,
 	context: { user: User; ws: WebSocket & { json: (data: unknown) => void } }
 ) {
@@ -53,8 +54,7 @@ function socketHandler(
 		return ws.close();
 	}
 
-	// eslint-disable-next-line prefer-const
-	let channel = channels.get(message.data.channel);
+	const channel = channels.get(message.data.channel);
 
 	// Check if the handshake is complete
 	switch (user.handshakeComplete) {

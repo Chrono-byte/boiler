@@ -12,6 +12,7 @@ import jwt from "jsonwebtoken";
 import http from "node:http";
 import { type AddressInfo } from "node:net";
 import path from "node:path";
+import process from "node:process";
 import { EventEmitter } from "node:stream";
 import WebSocket, { WebSocketServer } from "ws";
 
@@ -24,23 +25,34 @@ import {
 	createChannel,
 	getChannelById,
 	getUserByToken,
-} from "./db/dbAPI.ts";
+} from "./db/db.ts";
 import { getUserById, users } from "./db/users.ts";
 import { api, com } from "./routes/api.ts";
 import { authRouter } from "./routes/auth.ts";
 import socketHandler from "./socket.ts";
 import { type Channel, type User } from "./structures/structures.ts";
 
-// process
-import process from "node:process";
-
-// Will contain trailing slash
-// const __dirname = new URL(".", import.meta.url).pathname;
-
 // check that we're running Node.js 18 or higher
 if (Number.parseInt(process.versions.node.split(".")[0]) < 18) {
 	console.log("Error: Hammer requires Node.js 18 or higher!");
 	process.exit(1);
+}
+
+let __dirname;
+try {
+	//  if Deno not in window, then we're running in Node.js
+	if (("Deno" in window) == false) {
+		throw new Error("Running in Node.js");
+	}
+
+	// __dirname is the directory of execution
+	__dirname = path.dirname(new URL(import.meta.url).pathname);
+
+	// running in Deno
+	console.log("Running in Deno");
+} catch {
+	// running in Node.js
+	console.log("Running in Node.js");
 }
 
 dotenv.config();
