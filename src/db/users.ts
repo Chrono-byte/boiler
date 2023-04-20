@@ -4,7 +4,7 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-import { type User } from "../structures/structures.ts";
+import { type User } from '../structures/structures.ts';
 
 // Users, Map<string, User>
 const users = new Map<string, User>();

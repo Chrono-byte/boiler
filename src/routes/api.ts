@@ -4,28 +4,22 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-import { EventEmitter } from "node:events";
-import express from "express";
-
-// dotenv
-import dotenv from "dotenv";
-dotenv.config();
-
-// get version from version.ts
-import { LIB_VERSION as npm_package_version } from "../version.ts";
-
-// Import database functions
+import dotenv from 'dotenv';
+import express from 'express';
+import { EventEmitter } from 'node:events';
 import {
-	addUserToChannel,
-	createChannel,
-	deleteChannel,
-	getChannelById,
-	getChannelByName,
-	kickUserFromChannel,
-} from "../db/dbAPI.ts";
-import { getUserById } from "../db/users.ts";
-import { auth } from "./auth.ts";
-import { User } from "../structures/structures.ts";
+    addUserToChannel, createChannel,
+    deleteChannel, getChannelById,
+    getChannelByName, kickUserFromChannel,
+} from '../db/dbAPI.ts';
+import { getUserById } from '../db/users.ts';
+import {
+    User,
+} from '../structures/structures.ts';
+import { LIB_VERSION as npm_package_version } from '../version.ts';
+import { auth } from './auth.ts';
+
+dotenv.config();
 
 // Create router
 const router = express.Router();

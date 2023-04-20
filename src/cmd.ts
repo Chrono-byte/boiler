@@ -4,7 +4,7 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-import { LIB_VERSION } from "./version.ts";
+import { LIB_VERSION } from './version.ts';
 
 function banner() {
 	// Print the banner

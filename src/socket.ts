@@ -1,7 +1,17 @@
-import { Message, User } from "./structures/structures.ts";
-import channels, { checkTokenAuth } from "./db/dbAPI.ts";
-import { users } from "./db/users.ts";
-import jwt from "jsonwebtoken";
+/*
+ * Hammer - A simple WebSocket-based chat server & client written in JavaScript.
+ *
+ * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
+ */
+
+import jwt from 'jsonwebtoken';
+import channels, {
+    checkTokenAuth,
+} from './db/dbAPI.ts';
+import { users } from './db/users.ts';
+import {
+    Message, User,
+} from './structures/structures.ts';
 
 function socketHandler(
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any

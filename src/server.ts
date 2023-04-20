@@ -4,33 +4,27 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-// Utilities
-import path from "node:path";
-import { type AddressInfo } from "node:net";
-
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import cors from "cors";
-import express from "express";
-import { Server } from "ws";
-import { EventEmitter } from "node:stream";
-import http from "node:http";
-
-// Import external deps
-import { getUserById, users } from "./db/users.ts";
-import Banner from "./cmd.ts";
-import { authRouter } from "./routes/auth.ts";
-import { api, com } from "./routes/api.ts";
+import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import http from 'node:http';
+import { type AddressInfo } from 'node:net';
+import path from 'node:path';
+import { EventEmitter } from 'node:stream';
+import { Server } from 'ws';
+import Banner from './cmd.ts';
 import {
-	addUser,
-	addUserToChannel,
-	checkTokenAuth,
-	createChannel,
-	getChannelById,
-	getUserByToken,
-} from "./db/dbAPI.ts";
-import socketHandler from "./socket.ts";
-import { type Channel, type User } from "./structures/structures.ts";
+    addUser, addUserToChannel, checkTokenAuth,
+    createChannel, getChannelById, getUserByToken,
+} from './db/dbAPI.ts';
+import {
+    getUserById, users,
+} from './db/users.ts';
+import { api, com } from './routes/api.ts';
+import { authRouter } from './routes/auth.ts';
+import socketHandler from './socket.ts';
+import { type Channel, type User } from './structures/structures.ts';
 
 // check that we're running Node.js 18 or higher
 if (Number.parseInt(process.versions.node.split(".")[0]) < 18) {

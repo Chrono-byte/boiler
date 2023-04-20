@@ -4,20 +4,15 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-// net-related modules
+import dotenv from 'dotenv';
+import express from 'express';
+import jwt from 'jsonwebtoken';
 import {
-	addUser,
-	checkPassword,
-	checkTokenAuth,
-	getUserByToken,
-} from "../db/dbAPI.ts";
-import { getUserByEmail } from "../db/users.ts";
-import { type User } from "../structures/structures.ts";
-import express from "express";
-
-// Dotenv
-import dotenv from "dotenv";
-import jwt from "jsonwebtoken";
+    addUser, checkPassword, checkTokenAuth,
+    getUserByToken,
+} from '../db/dbAPI.ts';
+import { getUserByEmail } from '../db/users.ts';
+import { type User } from '../structures/structures.ts';
 
 dotenv.config();
 

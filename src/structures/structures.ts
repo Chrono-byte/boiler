@@ -4,8 +4,9 @@
  *
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
-import { getUserById } from "../db/users.ts";
-import generateSnowflake from "../util/snowflake.ts";
+
+import { getUserById } from '../db/users.ts';
+import generateSnowflake from '../util/snowflake.ts';
 
 function testUsername(username: string, bypass: boolean) {
 	// Check that username is a string

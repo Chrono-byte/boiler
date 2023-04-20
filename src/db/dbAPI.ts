@@ -4,15 +4,12 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-// import internal deps
-import generateSnowflake from "../util/snowflake.ts";
-
-// Import external deps
-
-// import internal deps
-import { Channel, PermissionsObject, User } from "../structures/structures.ts";
-import { getUserById, users } from "./users.ts";
-import bcrypt from "bcrypt";
+import bcrypt from 'bcrypt';
+import {
+    Channel, PermissionsObject, User,
+} from '../structures/structures.ts';
+import generateSnowflake from '../util/snowflake.ts';
+import { getUserById, users } from './users.ts';
 
 // Data structure to store channels
 const channels = new Map();
