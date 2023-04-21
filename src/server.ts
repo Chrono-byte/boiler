@@ -38,23 +38,10 @@ if (Number.parseInt(process.versions.node.split(".")[0]) < 18) {
 	process.exit(1);
 }
 
-let __dirname = path.dirname(new URL(import.meta.url).pathname);
-try {
-	//  if Deno not in window, then we're running in Node.js
-	if ("Deno" in window == false) {
-		throw new Error("Running in Node.js");
-	}
-
-	// __dirname is the directory of execution
-	__dirname = path.dirname(new URL(import.meta.url).pathname);
-
-	// running in Deno
-	console.log("Running in Deno");
-} catch {
-	// running in Node.js
-	console.log("Running in Node.js");
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+if ("Deno" in window == false) {
+	throw new Error("Running in Node.js");
 }
-
 dotenv.config();
 
 // Prompt the user for the port from process.argv or default to 8080, also it should be typeof Number
