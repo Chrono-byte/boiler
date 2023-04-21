@@ -20,7 +20,6 @@ import {
 	kickUserFromChannel,
 } from "../db/db.ts";
 import { getUserById } from "../db/users.ts";
-import { User } from "../structures/structures.ts";
 import { LIB_VERSION as npm_package_version } from "../version.ts";
 import { auth } from "./auth.ts";
 
@@ -33,17 +32,6 @@ const communicator = new EventEmitter();
 
 router.use(express.json());
 router.use(auth);
-
-// extend express request type to include authenticated property, user property which is added by auth middleware with ES2015 namespace merging
-declare global {
-	// eslint-disable-next-line @typescript-eslint/no-namespace
-	namespace Express {
-		interface Request {
-			authenticated: boolean;
-			user: User;
-		}
-	}
-}
 
 // API status endpoint
 router.get(

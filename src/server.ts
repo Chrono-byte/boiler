@@ -38,10 +38,10 @@ if (Number.parseInt(process.versions.node.split(".")[0]) < 18) {
 	process.exit(1);
 }
 
-let __dirname;
+let __dirname = path.dirname(new URL(import.meta.url).pathname);
 try {
 	//  if Deno not in window, then we're running in Node.js
-	if (("Deno" in window) == false) {
+	if ("Deno" in window == false) {
 		throw new Error("Running in Node.js");
 	}
 
@@ -260,6 +260,12 @@ app.use("/app", express.static(path.join(__dirname, "./app")));
 
 // // login router
 app.use("/app/login", express.static(path.join(__dirname, "./app/login.html")));
+
+// set x-powered-by header setting
+app.disable("x-powered-by");
+
+// set x-powered-by header to Express
+app.set("x-powered-by", "Express");
 
 // Start the server
 const listener = app.listen(port + 1, () => {
