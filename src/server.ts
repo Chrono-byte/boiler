@@ -34,7 +34,12 @@ import { type Channel, type User } from "./structures/structures.ts";
 
 // check that we're running Node.js 18 or higher
 if (Number.parseInt(process.versions.node.split(".")[0]) < 18) {
-	console.log("Error: Hammer requires Node.js 18 or higher!");
+	const err = new Error(
+		"Hammer requires Node.js 18 or higher to run. Please update your Node.js installation.",
+	);
+
+	console.log(err);
+
 	process.exit(1);
 }
 
