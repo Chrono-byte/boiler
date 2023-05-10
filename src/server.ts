@@ -65,10 +65,8 @@ app.use(express.json());
 // Listen for connections
 wss.on(
 	"connection",
-	(
-		ws: WebSocket & { json: (data: unknown) => void } & EventEmitter,
-		request: http.IncomingMessage & { url: string }
-	) => {
+	(	ws: WebSocket & { json: (data: unknown) => void } & EventEmitter,
+		request: http.IncomingMessage & { url: string } ) => {
 		const url = new URL(request.url, `http://${request.headers.host}`);
 		const token = url.searchParams.get("token");
 
