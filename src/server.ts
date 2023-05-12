@@ -157,19 +157,13 @@ wss.on(
 			console.log(`${username} has left the server.`);
 
 			// Remove the user's socket, if it exists
-			if (user.socket) {
-				user.socket = null;
-			}
+			user.socket = null;
 
 			// Remove the user's token, if it exists
-			if (user.token) {
-				user.token = null;
-			}
+			user.token = null;
 
 			// Remove the user handshake complete variable
-			if (user.handshakeComplete == true) {
-				user.handshakeComplete = false;
-			}
+			user.handshakeComplete = false;
 		});
 	}
 );
