@@ -31,7 +31,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/bcrypt", "npm:5.0.0"],\
             ["@types/cors", "npm:2.8.13"],\
             ["@types/express", "npm:4.17.17"],\
-            ["@types/jsonwebtoken", "npm:9.0.1"],\
+            ["@types/jsonwebtoken", "npm:9.0.2"],\
             ["@types/node", "npm:20.1.2"],\
             ["@types/uuid", "npm:9.0.1"],\
             ["@types/ws", "npm:8.5.4"],\
@@ -410,10 +410,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["@types/jsonwebtoken", [\
-        ["npm:9.0.1", {\
-          "packageLocation": "./.yarn/cache/@types-jsonwebtoken-npm-9.0.1-5f660fdf38-a7f0925e9a.zip/node_modules/@types/jsonwebtoken/",\
+        ["npm:9.0.2", {\
+          "packageLocation": "./.yarn/cache/@types-jsonwebtoken-npm-9.0.2-7af15f7b9b-3bb8d40e78.zip/node_modules/@types/jsonwebtoken/",\
           "packageDependencies": [\
-            ["@types/jsonwebtoken", "npm:9.0.1"],\
+            ["@types/jsonwebtoken", "npm:9.0.2"],\
             ["@types/node", "npm:18.15.12"]\
           ],\
           "linkType": "HARD"\
@@ -1010,7 +1010,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/bcrypt", "npm:5.0.0"],\
             ["@types/cors", "npm:2.8.13"],\
             ["@types/express", "npm:4.17.17"],\
-            ["@types/jsonwebtoken", "npm:9.0.1"],\
+            ["@types/jsonwebtoken", "npm:9.0.2"],\
             ["@types/node", "npm:20.1.2"],\
             ["@types/uuid", "npm:9.0.1"],\
             ["@types/ws", "npm:8.5.4"],\
