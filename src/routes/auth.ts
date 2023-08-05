@@ -10,15 +10,6 @@ import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import process from "node:process";
 
-// internal imports
-import {
-	addUser,
-	checkPassword,
-	checkTokenAuth,
-	getUserByToken,
-} from "../db/db.ts";
-import { getUserByEmail } from "../db/users.ts";
-
 dotenv.config();
 
 // Create router

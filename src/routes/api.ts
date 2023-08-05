@@ -10,16 +10,6 @@ import express, { Request, Response } from "express";
 import { EventEmitter } from "node:events";
 import process from "node:process";
 
-// internal imports
-import {
-	addUserToChannel,
-	createChannel,
-	deleteChannel,
-	getChannelById,
-	getChannelByName,
-	kickUserFromChannel,
-} from "../db/db.ts";
-import { getUserById } from "../db/users.ts";
 import { LIB_VERSION as npm_package_version } from "../version.ts";
 import { auth } from "./auth.ts";
 
