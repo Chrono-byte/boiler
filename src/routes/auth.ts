@@ -18,7 +18,6 @@ import {
 	getUserByToken,
 } from "../db/db.ts";
 import { getUserByEmail } from "../db/users.ts";
-import { type User } from "../structures/structures.ts";
 
 dotenv.config();
 
@@ -50,44 +49,45 @@ router.get(
 );
 
 // Login endpoint
-router.post("/login/email", (request: Request, res: Response) => {
+router.post("/login/email", async (request: Request, res: Response) => {
 	const { username, password } = request.body;
 
-	getUserByEmail(username)
-		.then(async (user: User) => {
-			// Check if password is correct
-			if ((await checkPassword(password, user.hash)) == true) {
-				// Generate token
-				const token = jwt.sign(
-					{
-						username: user.username,
-						id: user.id,
-						permissions: user.permissions,
-					},
-					process.env.JWT_SECRET,
-					{
-						expiresIn: "12h",
-					}
-				);
+	const user = await getUserByEmail(username);
 
-				// Assign token to user
-				user.token = token;
+	if (!user) {
+		res.status(404).json({ error: "User not found" });
+	}
 
-				// Send token
-				res.status(200).json({
-					token,
-					username: user.username,
-					id: user.id,
-				});
-			} else {
-				res.status(401).json({ error: "Incorrect password" });
+	// Check if password is correct
+	if ((await checkPassword(password, user.hash)) == true) {
+		// Generate token
+		const token = jwt.sign(
+			{
+				username: user.username,
+				id: user.id,
+				permissions: user.permissions,
+			},
+			process.env.JWT_SECRET,
+			{
+				expiresIn: "12h",
 			}
-		})
-		.catch((error) => {
-			console.log(error);
+		);
 
-			return res.status(401).json({ error: "User does not exist" });
+		// Assign token to user
+		user.token = token;
+
+		// Send token
+		res.status(200).json({
+			token: token,
+			username: user.username,
+			id: user.id,
 		});
+
+		// finish request
+		return;
+	} else {
+		res.status(401).json({ error: "Incorrect password" });
+	}
 });
 
 // Register endpoint

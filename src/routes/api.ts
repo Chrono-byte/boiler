@@ -33,14 +33,22 @@ const communicator = new EventEmitter();
 router.use(express.json());
 router.use(auth);
 
+// definition of the type of the request object
+declare global {
+	namespace Express {
+		interface Request {
+			authenticated: boolean;
+			query: { username: string; password: string };
+		}
+	}
+}
+
+
 // API status endpoint
 router.get(
 	"/",
 	(
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		const status = {

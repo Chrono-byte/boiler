@@ -7,10 +7,10 @@
 // external imports
 // import bcrypt from 'bcrypt';
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { v4 as uuidv4 } from 'uuid';
 
 // internal imports
 import { Channel, PermissionsObject, User } from "../structures/structures.ts";
-import generateSnowflake from "../util/snowflake.ts";
 import { getUserById, users } from "./users.ts";
 
 // Data structure to store channels
@@ -58,7 +58,7 @@ async function addUser(
 		bcrypt
 			.hash(password, salt)
 			.then((hash: string) => {
-				const id = generateSnowflake();
+				const id = uuidv4();
 
 				// Add user to database
 				users.set(
@@ -138,7 +138,7 @@ function createChannel(
 				const channel = new Channel(
 					name,
 					description,
-					generateSnowflake(),
+					uuidv4(),
 					user.Member
 				);
 

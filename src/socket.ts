@@ -1,5 +1,5 @@
 /*
- * Hammer - A simple WebSocket-based chat server & client written in JavaScript.
+ * Hammer - A simple WebSocket-based chat server & client written in TypeScript.
  *
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */

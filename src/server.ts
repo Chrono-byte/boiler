@@ -30,12 +30,11 @@ import { getUserById, users } from "./db/users.ts";
 import { api, com } from "./routes/api.ts";
 import { authRouter } from "./routes/auth.ts";
 import socketHandler from "./socket.ts";
-import { type Channel, type User } from "./structures/structures.ts";
 
 // check that we're running Node.js 18 or higher
 if (Number.parseInt(process.versions.node.split(".")[0]) < 18) {
 	const err = new Error(
-		"Hammer requires Node.js 18 or higher to run. Please update your Node.js installation.",
+		"Hammer requires Node.js 18 or higher to run. Please update your Node.js installation."
 	);
 
 	console.log(err);
@@ -65,8 +64,10 @@ app.use(express.json());
 // Listen for connections
 wss.on(
 	"connection",
-	(	ws: WebSocket & { json: (data: unknown) => void } & EventEmitter,
-		request: http.IncomingMessage & { url: string } ) => {
+	(
+		ws: WebSocket & { json: (data: unknown) => void } & EventEmitter,
+		request: http.IncomingMessage & { url: string }
+	) => {
 		const url = new URL(request.url, `http://${request.headers.host}`);
 		const token = url.searchParams.get("token");
 
@@ -254,9 +255,6 @@ app.use("/app/login", express.static(path.join(__dirname, "./app/login.html")));
 // set x-powered-by header setting
 app.disable("x-powered-by");
 
-// set x-powered-by header to Express
-app.set("x-powered-by", "Express");
-
 // Start the server
 const listener = app.listen(port + 1, () => {
 	// Print the banner
@@ -275,12 +273,16 @@ const listener = app.listen(port + 1, () => {
 	console.log("Server API is listening on http://localhost:" + ePort);
 });
 
+/*
 addUser("admin@disilla.org", "admin", "password", {
 	ADMINISTRATOR: true,
 	MANAGE_CHANNELS: true,
 	MANAGE_MESSAGES: true,
 })
 	.then((user: User) => {
+
+		console.log("Admin user created.");
+
 		createChannel(
 			{ name: "general", description: "The general channel" },
 			user.id
@@ -307,3 +309,41 @@ addUser("admin@disilla.org", "admin", "password", {
 	.catch((error) => {
 		console.log(error);
 	});
+	*/
+
+(async () => {
+	const user = await addUser("admin@disilla.org", "admin", "password", {
+		ADMINISTRATOR: true,
+		MANAGE_CHANNELS: true,
+		MANAGE_MESSAGES: true,
+	});
+
+	const name = (await getUserById(user.id)).username;
+	if(name == "admin") {
+		console.log("Admin user created.");
+	}
+
+	const channel = await createChannel(
+		{ name: "general", description: "The general channel" },
+		user.id
+	);
+
+	await addUserToChannel(channel.id, user.id);
+	com.emit("channelJoin", { user: user.id, channel: channel.id });
+
+	const nuser = await addUser("me@disilla.org", "chrono", "password", {
+		ADMINISTRATOR: false,
+		MANAGE_CHANNELS: false,
+		MANAGE_MESSAGES: false,
+	});
+
+	const name1 = (await getUserById(nuser.id)).username;
+	if(name1 == "chrono") {
+		console.log("Chrono user created.");
+	}
+
+	await addUserToChannel(channel.id, nuser.id);
+	com.emit("channelJoin", { user: nuser.id, channel: channel.id });
+
+	console.log("Async/await test complete.");
+})();
