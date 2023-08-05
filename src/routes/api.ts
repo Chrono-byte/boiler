@@ -96,10 +96,7 @@ router.get(
 router.get(
 	"/channels/:id",
 	(
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		// Check if user is authenticated
@@ -127,10 +124,7 @@ router.get(
 router.post(
 	"/channels",
 	(
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		// Check if user is authenticated
@@ -182,10 +176,7 @@ router.post(
 router.delete(
 	"/channels/:id",
 	(
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		// Check if user is authenticated
@@ -223,10 +214,7 @@ router.delete(
 router.get(
 	"/channels/:id/members/",
 	(
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		// Check if user is authenticated
@@ -253,10 +241,7 @@ router.get(
 router.delete(
 	"/channels/:id/members/:uid",
 	(
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		// Check if user is authenticated
@@ -310,10 +295,7 @@ router.delete(
 router.delete(
 	"/channels/:id/members/@me",
 	async (
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		// Check if user is authenticated
@@ -372,10 +354,7 @@ router.delete(
 router.put(
 	"/channels/:id/members",
 	async (
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		// Check if user is authenticated
@@ -441,10 +420,7 @@ router.put(
 router.get(
 	"/user/:id",
 	async (
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		// Check if user is authenticated
@@ -475,10 +451,7 @@ router.get(
 router.put(
 	"/user/:id/avatar",
 	async (
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		// Check if user is authenticated
@@ -519,10 +492,7 @@ router.put(
 router.get(
 	"/user/:id/avatar",
 	async (
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		// Check if user is authenticated
@@ -553,10 +523,7 @@ router.get(
 router.put(
 	"/user/:id/username",
 	async (
-		request: Request & {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		},
+		request: Request,
 		res: Response
 	) => {
 		// Check if user is authenticated
