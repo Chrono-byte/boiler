@@ -7,7 +7,3 @@ Boiler is a chat server written in TypeScript. It is designed to be easy to use 
 ## Installation
 
 Note: Hammer is currently in development, do not touch.
-
-## Contributing
-
-no ;)
