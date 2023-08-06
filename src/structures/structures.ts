@@ -5,16 +5,13 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-// internal imports
-import { getUserById } from "../db/users.ts";
-import generateSnowflake from "../util/snowflake.ts";
-
 // external imports
-import WebSocket from "ws";
+import WebSocket from 'ws';
+import { v4 as uuidv4 } from 'uuid';
 
 function testUsername(username: string, bypass: boolean) {
 	// Check that username is a string
-	if (typeof username !== "string") {
+	if (typeof username !== 'string') {
 		return false;
 	}
 
@@ -34,19 +31,10 @@ function testUsername(username: string, bypass: boolean) {
 			return false;
 		}
 
-		// Check that username is not taken
-		if (getUserById(username) !== null) {
-			return false;
-		}
-
 		// Check that username is not a reserved name
 		if (
-			username == "hammer" ||
-			username == "system" ||
-			username == "server" ||
-			username == "root" ||
-			username == "owner" ||
-			username == "sys"
+			username == 'system' ||
+			username == 'root'
 		) {
 			return false;
 		}
@@ -71,13 +59,13 @@ class Message {
 		// Check that required parameters are provided
 		if (!content || !author || !channel) {
 			throw new Error(
-				"Missing required parameters for Message constructor. (content, author, channel)"
+				'Missing required parameters for Message constructor. (content, author, channel)',
 			);
 		}
 
 		// Check that content is a string
-		if (typeof content !== "string") {
-			throw new TypeError("Message content must be a string.");
+		if (typeof content !== 'string') {
+			throw new TypeError('Message content must be a string.');
 		}
 
 		// Message and author
@@ -91,7 +79,7 @@ class Message {
 		// Message metadata
 		this.createdAt = new Date();
 		this.reply = false;
-		this.id = generateSnowflake();
+		this.id = uuidv4();
 	}
 }
 
@@ -102,7 +90,7 @@ class PermissionsObject {
 	constructor(
 		ADMINISTRATOR: boolean,
 		MANAGE_CHANNELS: boolean,
-		MANAGE_MESSAGES: boolean
+		MANAGE_MESSAGES: boolean,
 	) {
 		this.ADMINISTRATOR = ADMINISTRATOR;
 		this.MANAGE_CHANNELS = MANAGE_CHANNELS;
@@ -149,7 +137,7 @@ class User {
 		username: string,
 		hash: string,
 		permissions: PermissionsObject,
-		id: string
+		id: string,
 	) {
 		// Account auth info
 		this.email = email as string;
@@ -159,7 +147,7 @@ class User {
 
 		// check that username is valid
 		if (!testUsername(username, true)) {
-			throw new Error("Invalid username");
+			throw new Error('Invalid username');
 		}
 
 		this.username = username as string;
@@ -211,4 +199,4 @@ class Channel {
 	}
 }
 
-export { User, Channel, Message, testUsername, PermissionsObject };
+export { Channel, Message, PermissionsObject, testUsername, User };
