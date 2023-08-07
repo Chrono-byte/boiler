@@ -3,6 +3,7 @@
   "remote": {},
   "npm": {
     "specifiers": {
+      "@prisma/client@5.1.1": "@prisma/client@5.1.1_prisma@4.16.2",
       "@types/bcrypt@^5.0.0": "@types/bcrypt@5.0.0",
       "@types/cors@^2.8.13": "@types/cors@2.8.13",
       "@types/express@^4.17.17": "@types/express@4.17.17",
@@ -20,10 +21,12 @@
       "eslint-plugin-import@^2.27.5": "eslint-plugin-import@2.28.0_eslint@8.46.0",
       "eslint-plugin-prettier@^4.2.1": "eslint-plugin-prettier@4.2.1_eslint@8.46.0_prettier@2.8.8",
       "eslint@^8.46.0": "eslint@8.46.0",
+      "express": "express@4.18.2",
       "express@^4.18.2": "express@4.18.2",
       "jsonwebtoken@^9.0.0": "jsonwebtoken@9.0.1",
       "prettier@^2.8.8": "prettier@2.8.8",
       "prisma": "prisma@4.16.2",
+      "prisma@5.1.1": "prisma@5.1.1",
       "prisma@^4.5": "prisma@4.16.2",
       "ts-node@^10.9.1": "ts-node@10.9.1_@types+node@18.16.19_typescript@5.1.6",
       "tslib@^2.5.0": "tslib@2.6.1",
@@ -145,8 +148,23 @@
           "tslib": "tslib@2.6.1"
         }
       },
+      "@prisma/client@5.1.1_prisma@4.16.2": {
+        "integrity": "sha512-fxcCeK5pMQGcgCqCrWsi+I2rpIbk0rAhdrN+ke7f34tIrgPwA68ensrpin+9+fZvuV2OtzHmuipwduSY6HswdA==",
+        "dependencies": {
+          "@prisma/engines-version": "@prisma/engines-version@5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e",
+          "prisma": "prisma@4.16.2"
+        }
+      },
+      "@prisma/engines-version@5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e": {
+        "integrity": "sha512-owZqbY/wucbr65bXJ/ljrHPgQU5xXTSkmcE/JcbqE1kusuAXV/TLN3/exmz21SZ5rJ7WDkyk70J2G/n68iogbQ==",
+        "dependencies": {}
+      },
       "@prisma/engines@4.16.2": {
         "integrity": "sha512-vx1nxVvN4QeT/cepQce68deh/Turxy5Mr+4L4zClFuK1GlxN3+ivxfuv+ej/gvidWn1cE1uAhW7ALLNlYbRUAw==",
+        "dependencies": {}
+      },
+      "@prisma/engines@5.1.1": {
+        "integrity": "sha512-NV/4nVNWFZSJCCIA3HIFJbbDKO/NARc9ej0tX5S9k2EVbkrFJC4Xt9b0u4rNZWL4V+F5LAjvta8vzEUw0rw+HA==",
         "dependencies": {}
       },
       "@tsconfig/node10@1.0.9": {
@@ -1913,6 +1931,12 @@
         "integrity": "sha512-SYCsBvDf0/7XSJyf2cHTLjLeTLVXYfqp7pG5eEVafFLeT0u/hLFz/9W196nDRGUOo1JfPatAEb+uEnTQImQC1g==",
         "dependencies": {
           "@prisma/engines": "@prisma/engines@4.16.2"
+        }
+      },
+      "prisma@5.1.1": {
+        "integrity": "sha512-WJFG/U7sMmcc6TjJTTifTfpI6Wjoh55xl4AzopVwAdyK68L9/ogNo8QQ2cxuUjJf/Wa82z/uhyh3wMzvRIBphg==",
+        "dependencies": {
+          "@prisma/engines": "@prisma/engines@5.1.1"
         }
       },
       "proxy-addr@2.0.7": {

@@ -83,19 +83,11 @@ class Message {
 	}
 }
 
-class PermissionsObject {
+// permissions object
+interface PermissionsObject {
 	ADMINISTRATOR: boolean;
 	MANAGE_CHANNELS: boolean;
 	MANAGE_MESSAGES: boolean;
-	constructor(
-		ADMINISTRATOR: boolean,
-		MANAGE_CHANNELS: boolean,
-		MANAGE_MESSAGES: boolean,
-	) {
-		this.ADMINISTRATOR = ADMINISTRATOR;
-		this.MANAGE_CHANNELS = MANAGE_CHANNELS;
-		this.MANAGE_MESSAGES = MANAGE_MESSAGES;
-	}
 }
 
 class Member {
@@ -199,4 +191,4 @@ class Channel {
 	}
 }
 
-export { Channel, Message, PermissionsObject, testUsername, User };
+export { Channel, Message, User };

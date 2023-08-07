@@ -28,6 +28,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {\
           "packageLocation": "./",\
           "packageDependencies": [\
+            ["@prisma/client", "virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:5.1.1"],\
             ["@types/bcrypt", "npm:5.0.0"],\
             ["@types/cors", "npm:2.8.13"],\
             ["@types/express", "npm:4.17.17"],\
@@ -41,6 +42,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["express", "npm:4.18.2"],\
             ["jsonwebtoken", "npm:9.0.1"],\
             ["prettier", "npm:2.8.8"],\
+            ["prisma", "npm:5.1.1"],\
             ["ts-node", "virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:10.9.1"],\
             ["tslib", "npm:2.6.1"],\
             ["typescript", "patch:typescript@npm%3A5.1.6#~builtin<compat/typescript>::version=5.1.6&hash=85af82"],\
@@ -146,6 +148,47 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@pkgjs-parseargs-npm-0.11.0-cd2a3fe948-6ad6a00fc4.zip/node_modules/@pkgjs/parseargs/",\
           "packageDependencies": [\
             ["@pkgjs/parseargs", "npm:0.11.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@prisma/client", [\
+        ["npm:5.1.1", {\
+          "packageLocation": "./.yarn/unplugged/@prisma-client-virtual-e2f83ded61/node_modules/@prisma/client/",\
+          "packageDependencies": [\
+            ["@prisma/client", "npm:5.1.1"]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:5.1.1", {\
+          "packageLocation": "./.yarn/unplugged/@prisma-client-virtual-e2f83ded61/node_modules/@prisma/client/",\
+          "packageDependencies": [\
+            ["@prisma/client", "virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:5.1.1"],\
+            ["@prisma/engines-version", "npm:5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e"],\
+            ["@types/prisma", null],\
+            ["prisma", "npm:5.1.1"]\
+          ],\
+          "packagePeers": [\
+            "@types/prisma",\
+            "prisma"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@prisma/engines", [\
+        ["npm:5.1.1", {\
+          "packageLocation": "./.yarn/unplugged/@prisma-engines-npm-5.1.1-fc7aed99ab/node_modules/@prisma/engines/",\
+          "packageDependencies": [\
+            ["@prisma/engines", "npm:5.1.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@prisma/engines-version", [\
+        ["npm:5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e", {\
+          "packageLocation": "./.yarn/cache/@prisma-engines-version-npm-5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e-c6eeb14996-cfea78fe98.zip/node_modules/@prisma/engines-version/",\
+          "packageDependencies": [\
+            ["@prisma/engines-version", "npm:5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -561,6 +604,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["boiler", "workspace:."],\
+            ["@prisma/client", "virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:5.1.1"],\
             ["@types/bcrypt", "npm:5.0.0"],\
             ["@types/cors", "npm:2.8.13"],\
             ["@types/express", "npm:4.17.17"],\
@@ -574,6 +618,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["express", "npm:4.18.2"],\
             ["jsonwebtoken", "npm:9.0.1"],\
             ["prettier", "npm:2.8.8"],\
+            ["prisma", "npm:5.1.1"],\
             ["ts-node", "virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:10.9.1"],\
             ["tslib", "npm:2.6.1"],\
             ["typescript", "patch:typescript@npm%3A5.1.6#~builtin<compat/typescript>::version=5.1.6&hash=85af82"],\
@@ -1908,6 +1953,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/prettier-npm-2.8.8-430828a36c-b49e409431.zip/node_modules/prettier/",\
           "packageDependencies": [\
             ["prettier", "npm:2.8.8"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["prisma", [\
+        ["npm:5.1.1", {\
+          "packageLocation": "./.yarn/unplugged/prisma-npm-5.1.1-b7c73b99a0/node_modules/prisma/",\
+          "packageDependencies": [\
+            ["prisma", "npm:5.1.1"],\
+            ["@prisma/engines", "npm:5.1.1"]\
           ],\
           "linkType": "HARD"\
         }]\
