@@ -23,6 +23,7 @@
       "express@^4.18.2": "express@4.18.2",
       "jsonwebtoken@^9.0.0": "jsonwebtoken@9.0.1",
       "prettier@^2.8.8": "prettier@2.8.8",
+      "prisma": "prisma@4.16.2",
       "prisma@^4.5": "prisma@4.16.2",
       "ts-node@^10.9.1": "ts-node@10.9.1_@types+node@18.16.19_typescript@5.1.6",
       "tslib@^2.5.0": "tslib@2.6.1",

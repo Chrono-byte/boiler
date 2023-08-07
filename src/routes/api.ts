@@ -23,21 +23,16 @@ const communicator = new EventEmitter();
 router.use(express.json());
 router.use(auth);
 
-// definition of the type of the request object
-declare global {
-	namespace Express {
-		interface Request {
-			authenticated: boolean;
-			query: { username: string; password: string };
-		}
-	}
+interface BoilerRequest extends Request {
+	authenticated: boolean;
+	query: { username: string; password: string };
 }
 
 // API status endpoint
 router.get(
 	'/',
 	(
-		request: Request,
+		request: BoilerRequest,
 		res: Response,
 	) => {
 		const status = {
@@ -85,7 +80,7 @@ router.get(
 router.get(
 	'/channels/:id',
 	(
-		request: Request,
+		request: BoilerRequest,
 		res: Response,
 	) => {
 		// Check if user is authenticated
@@ -113,7 +108,7 @@ router.get(
 router.post(
 	'/channels',
 	(
-		request: Request,
+		request: BoilerRequest,
 		res: Response,
 	) => {
 		// Check if user is authenticated
@@ -165,7 +160,7 @@ router.post(
 router.delete(
 	'/channels/:id',
 	(
-		request: Request,
+		request: BoilerRequest,
 		res: Response,
 	) => {
 		// Check if user is authenticated
@@ -203,7 +198,7 @@ router.delete(
 router.get(
 	'/channels/:id/members/',
 	(
-		request: Request,
+		request: BoilerRequest,
 		res: Response,
 	) => {
 		// Check if user is authenticated
@@ -230,7 +225,7 @@ router.get(
 router.delete(
 	'/channels/:id/members/:uid',
 	(
-		request: Request,
+		request: BoilerRequest,
 		res: Response,
 	) => {
 		// Check if user is authenticated
@@ -284,7 +279,7 @@ router.delete(
 router.delete(
 	'/channels/:id/members/@me',
 	async (
-		request: Request,
+		request: BoilerRequest,
 		res: Response,
 	) => {
 		// Check if user is authenticated
@@ -343,7 +338,7 @@ router.delete(
 router.put(
 	'/channels/:id/members',
 	async (
-		request: Request,
+		request: BoilerRequest,
 		res: Response,
 	) => {
 		// Check if user is authenticated
@@ -409,7 +404,7 @@ router.put(
 router.get(
 	'/user/:id',
 	async (
-		request: Request,
+		request: BoilerRequest,
 		res: Response,
 	) => {
 		// Check if user is authenticated
@@ -440,7 +435,7 @@ router.get(
 router.put(
 	'/user/:id/username',
 	async (
-		request: Request,
+		request: BoilerRequest,
 		res: Response,
 	) => {
 		// Check if user is authenticated
