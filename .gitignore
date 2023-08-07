@@ -2,6 +2,9 @@
 .env
 src/version.ts
 
+# sqlite hot database
+dev.db
+
 # Yarn Ignored Files
 .yarn/*
 !.yarn/cache
