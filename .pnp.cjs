@@ -49,7 +49,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["jsonwebtoken", "npm:9.0.0"],\
             ["prettier", "npm:2.8.8"],\
             ["ts-node", "virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:10.9.1"],\
-            ["tslib", "npm:2.5.0"],\
+            ["tslib", "npm:2.6.1"],\
             ["typescript", "patch:typescript@npm%3A5.0.4#~builtin<compat/typescript>::version=5.0.4&hash=85af82"],\
             ["uuid", "npm:9.0.0"],\
             ["ws", "virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:8.13.0"]\
@@ -1046,7 +1046,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["jsonwebtoken", "npm:9.0.0"],\
             ["prettier", "npm:2.8.8"],\
             ["ts-node", "virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:10.9.1"],\
-            ["tslib", "npm:2.5.0"],\
+            ["tslib", "npm:2.6.1"],\
             ["typescript", "patch:typescript@npm%3A5.0.4#~builtin<compat/typescript>::version=5.0.4&hash=85af82"],\
             ["uuid", "npm:9.0.0"],\
             ["ws", "virtual:94c097482eb202cbd720b43a6817294c9ab8f973f179a848d86bd0fa09795bad50696bcd15cd360705405d5bc0308557ecbbfe8af43a9347fe1e375869b90dbe#npm:8.13.0"]\
@@ -4346,6 +4346,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/tslib-npm-2.5.0-bb364efebd-ae3ed5f9ce.zip/node_modules/tslib/",\
           "packageDependencies": [\
             ["tslib", "npm:2.5.0"]\
+          ],\
+          "linkType": "HARD"\
+        }],\
+        ["npm:2.6.1", {\
+          "packageLocation": "./.yarn/cache/tslib-npm-2.6.1-de28eba753-b0d176d176.zip/node_modules/tslib/",\
+          "packageDependencies": [\
+            ["tslib", "npm:2.6.1"]\
           ],\
           "linkType": "HARD"\
         }]\
