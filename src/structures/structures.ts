@@ -5,16 +5,13 @@
  * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
  */
 
-// internal imports
-import { getUserById } from "../db/users.ts";
-import generateSnowflake from "../util/snowflake.ts";
-
 // external imports
-import WebSocket from "ws";
+import WebSocket from 'ws';
+import { v4 as uuidv4 } from 'uuid';
 
 function testUsername(username: string, bypass: boolean) {
 	// Check that username is a string
-	if (typeof username !== "string") {
+	if (typeof username !== 'string') {
 		return false;
 	}
 
@@ -34,19 +31,10 @@ function testUsername(username: string, bypass: boolean) {
 			return false;
 		}
 
-		// Check that username is not taken
-		if (getUserById(username) !== null) {
-			return false;
-		}
-
 		// Check that username is not a reserved name
 		if (
-			username == "hammer" ||
-			username == "system" ||
-			username == "server" ||
-			username == "root" ||
-			username == "owner" ||
-			username == "sys"
+			username == 'system' ||
+			username == 'root'
 		) {
 			return false;
 		}
@@ -71,13 +59,13 @@ class Message {
 		// Check that required parameters are provided
 		if (!content || !author || !channel) {
 			throw new Error(
-				"Missing required parameters for Message constructor. (content, author, channel)"
+				'Missing required parameters for Message constructor. (content, author, channel)',
 			);
 		}
 
 		// Check that content is a string
-		if (typeof content !== "string") {
-			throw new TypeError("Message content must be a string.");
+		if (typeof content !== 'string') {
+			throw new TypeError('Message content must be a string.');
 		}
 
 		// Message and author
@@ -91,7 +79,7 @@ class Message {
 		// Message metadata
 		this.createdAt = new Date();
 		this.reply = false;
-		this.id = generateSnowflake();
+		this.id = uuidv4();
 	}
 }
 
@@ -102,7 +90,7 @@ class PermissionsObject {
 	constructor(
 		ADMINISTRATOR: boolean,
 		MANAGE_CHANNELS: boolean,
-		MANAGE_MESSAGES: boolean
+		MANAGE_MESSAGES: boolean,
 	) {
 		this.ADMINISTRATOR = ADMINISTRATOR;
 		this.MANAGE_CHANNELS = MANAGE_CHANNELS;
@@ -149,7 +137,7 @@ class User {
 		username: string,
 		hash: string,
 		permissions: PermissionsObject,
-		id: string
+		id: string,
 	) {
 		// Account auth info
 		this.email = email as string;
@@ -159,7 +147,7 @@ class User {
 
 		// check that username is valid
 		if (!testUsername(username, true)) {
-			throw new Error("Invalid username");
+			throw new Error('Invalid username');
 		}
 
 		this.username = username as string;
@@ -186,43 +174,6 @@ class User {
 		// List of channels the user is in
 		this.channels = new Map();
 	}
-
-	send(message: string) {
-		// Unimplemented send to user
-		console.log(`Sending message to user ${this.username}: ${message}`);
-
-		throw new Error("Not implemented");
-	}
-
-	setUsername(username: string, bypass: boolean) {
-		const yes = testUsername(username, bypass);
-
-		if (!yes) {
-			throw new Error("Invalid username");
-		}
-
-		this.username = username;
-	}
-
-	setAvatarURL(url: string) {
-		// Regex to check if url is valid
-		const regex = /^(http|https):\/\/[^ "]+$/;
-
-		if (!regex.test(url)) {
-			throw new Error("Invalid URL");
-		}
-
-		// Check that url is an image
-		if (
-			!url.endsWith(".png") &&
-			!url.endsWith(".jpg") &&
-			!url.endsWith(".jpeg")
-		) {
-			throw new Error("URL is not an image");
-		}
-
-		this.avatarURL = url;
-	}
 }
 
 class Channel {
@@ -246,163 +197,6 @@ class Channel {
 		// messages: Map<string, Message>;
 		this.messages = new Map<string, Message>();
 	}
-
-	rename(name: string, user: { permissions: { MANAGE_CHANNELS: boolean } }) {
-		// Check that the user has permission to rename the channel
-		if (!user.permissions.MANAGE_CHANNELS) {
-			throw new Error(
-				"You do not have permission to rename this channel."
-			);
-		}
-
-		// Check that name is a string
-		if (typeof name !== "string") {
-			throw new TypeError("Channel name must be a string.");
-		}
-
-		// Check that name is not empty
-		if (name.length === 0) {
-			throw new Error("Channel name cannot be empty.");
-		}
-
-		// Check that name is not too long
-		if (name.length > 16) {
-			throw new Error(
-				"Channel name cannot be longer than 16 characters."
-			);
-		}
-
-		this.name = name;
-	}
-
-	setDescription(
-		description: string,
-		user: { permissions: { MANAGE_CHANNELS: boolean } }
-	) {
-		// Check that the user has permission to rename the channel
-		if (!user.permissions.MANAGE_CHANNELS) {
-			throw new Error(
-				"You do not have permission to rename this channel."
-			);
-		}
-
-		// Check that description is a string
-		if (typeof description !== "string") {
-			throw new TypeError("Channel description must be a string.");
-		}
-
-		// Check that description is not too long
-		if (description.length > 128) {
-			throw new Error(
-				"Channel description cannot be longer than 128 characters."
-			);
-		}
-
-		this.description = description;
-	}
-
-	addMember(member: Member) {
-		// Check that the member is not already in the channel
-		if (this.members.has(member.id)) {
-			console.error("Member is already in this channel.");
-			return;
-		}
-
-		this.members.set(member.id, member);
-	}
-
-	removeMember(member: { id: string }) {
-		// Check that the member is in the channel
-		if (!this.members.has(member.id)) {
-			throw new Error("Member is not in this channel.");
-		}
-
-		this.members.delete(member.id);
-	}
-
-	setOwner(member: User) {
-		this.owner = member;
-	}
-
-	async sendAll(message: Message, from: string) {
-		// Check if from is set
-		if (!from) {
-			if (!message.author) {
-				throw new Error("Message must have an author.");
-			}
-			from = message.author.id;
-		}
-
-		if (typeof message === "string" && from) {
-			message = new Message(message, from, this);
-		}
-
-		// Check that message is a Message
-		if (!(message instanceof Message)) {
-			throw new TypeError("Message must be a Message object.");
-		}
-
-		// Check that message is from this channel
-		if (message.channel.id !== this.id) {
-			throw new Error("Message is not from this channel.");
-		}
-
-		// Push message to messages store
-		this.messages.set(message.id, message);
-
-		for (const [, member] of this.members) {
-			// Get the member's full user from the id
-			const user = await getUserById(member.id);
-			if (!user.socket || member.id == from) {
-				continue;
-			}
-
-			try {
-				user.socket.json({
-					op: 0,
-					data: message,
-					type: "MESSAGE",
-				});
-			} catch (error) {
-				console.log(error);
-			}
-		}
-	}
-
-	deleteMessage(
-		message: Message,
-		user: { permissions: { MANAGE_MESSAGES: boolean }; id: string }
-	) {
-		// Check that the user has permission to delete messages
-		if (
-			!user.permissions.MANAGE_MESSAGES ||
-			user.id !== message.author?.id
-		) {
-			throw new Error(
-				"You do not have permission to delete this message."
-			);
-		}
-
-		// Check that message is from this channel
-		if (message.channel.id !== this.id) {
-			throw new Error("Message is not from this channel.");
-		}
-
-		this.messages.delete(message.id);
-	}
-
-	async broadcast(message: { content: string }) {
-		for (const [, member] of this.members) {
-			const user = await getUserById(member.id);
-			if (member.id !== this.owner.id) {
-				user.socket.json({
-					op: 0,
-					data: new Message(message.content, "hehe", this),
-					type: "MESSAGE",
-				});
-			}
-		}
-	}
 }
 
-export { User, Channel, Message, testUsername, PermissionsObject };
+export { Channel, Message, PermissionsObject, testUsername, User };

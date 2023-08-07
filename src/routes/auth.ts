@@ -5,19 +5,10 @@
  */
 
 // external imports
-import dotenv from "dotenv";
-import express, { Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import process from "node:process";
-
-// internal imports
-import {
-	addUser,
-	checkPassword,
-	checkTokenAuth,
-	getUserByToken,
-} from "../db/db.ts";
-import { getUserByEmail } from "../db/users.ts";
+import dotenv from 'dotenv';
+import express, { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import process from 'node:process';
 
 dotenv.config();
 
@@ -25,13 +16,13 @@ dotenv.config();
 const router = express.Router();
 
 router.get(
-	"/",
+	'/',
 	(
 		request: Request & {
 			authenticated: boolean;
 			query: { token: string };
 		},
-		res: Response
+		res: Response,
 	) => {
 		// Check if user is authenticated
 		if (request.authenticated) {
@@ -43,19 +34,19 @@ router.get(
 			});
 		} else {
 			// Send error
-			res.status(401).json({ error: "err" });
+			res.status(401).json({ error: 'err' });
 		}
-	}
+	},
 );
 
 // Login endpoint
-router.post("/login/email", async (request: Request, res: Response) => {
+router.post('/login/email', async (request: Request, res: Response) => {
 	const { username, password } = request.body;
 
 	const user = await getUserByEmail(username);
 
 	if (!user) {
-		res.status(404).json({ error: "User not found" });
+		res.status(404).json({ error: 'User not found' });
 	}
 
 	// Check if password is correct
@@ -69,8 +60,8 @@ router.post("/login/email", async (request: Request, res: Response) => {
 			},
 			process.env.JWT_SECRET,
 			{
-				expiresIn: "12h",
-			}
+				expiresIn: '12h',
+			},
 		);
 
 		// Assign token to user
@@ -86,19 +77,19 @@ router.post("/login/email", async (request: Request, res: Response) => {
 		// finish request
 		return;
 	} else {
-		res.status(401).json({ error: "Incorrect password" });
+		res.status(401).json({ error: 'Incorrect password' });
 	}
 });
 
 // Register endpoint
 router.post(
-	"/register",
+	'/register',
 	(
 		request: Request & {
 			authenticated: boolean;
 			query: { username: string; password: string };
 		},
-		res: Response
+		res: Response,
 	) => {
 		// Get email, username, and password from request
 		const email = request.query.email as string;
@@ -114,7 +105,7 @@ router.post(
 				// Check if user exists
 				if (user) {
 					// Send error
-					res.status(500).json({ error: "User already exists" });
+					res.status(500).json({ error: 'User already exists' });
 				}
 			})
 			.catch(() => {
@@ -133,7 +124,7 @@ router.post(
 						res.status(500).json({ error });
 					});
 			});
-	}
+	},
 );
 
 // Authentication middleware, checks if user is logged in & redirects to login page if not, otherwise continues to next middleware
@@ -143,7 +134,7 @@ const auth = (
 		query: { username: string; password: string };
 	},
 	res: Response,
-	next: () => void
+	next: () => void,
 ) => {
 	// Get token from request
 	const token = request.headers.authorization;
@@ -163,20 +154,20 @@ const auth = (
 	} else {
 		// Check if the route is for the API status endpoint
 		if (
-			request.url === "/" ||
-			request.url === "/auth/login/email" ||
-			request.url === "/auth/register"
+			request.url === '/' ||
+			request.url === '/auth/login/email' ||
+			request.url === '/auth/register'
 		) {
 			// Allow access to /api/ routes
 			next();
 		} else {
 			// Log error
-			console.log("Not authenticated.");
+			console.log('Not authenticated.');
 
 			// Send error
-			res.status(401).json({ error: "Not authenticated." });
+			res.status(401).json({ error: 'Not authenticated.' });
 		}
 	}
 };
 
-export { router as authRouter, auth };
+export { auth, router as authRouter };

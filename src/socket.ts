@@ -10,18 +10,12 @@ import WebSocket from 'ws';
 import process from 'node:process';
 
 // internal imports
-import channels, {
-    checkTokenAuth
-} from './db/db.ts';
-import { users } from './db/users.ts';
-import {
-    Message, User
-} from './structures/structures.ts';
+import { Message, User } from './structures/structures.ts';
 
 function socketHandler(
 	// deno-lint-ignore no-explicit-any
 	message: any,
-	context: { user: User; ws: WebSocket & { json: (data: unknown) => void } }
+	context: { user: User; ws: WebSocket & { json: (data: unknown) => void } },
 ) {
 	const user = context.user as User;
 	const ws = context.ws as WebSocket & { json: (data: unknown) => void };
@@ -45,9 +39,9 @@ function socketHandler(
 		ws.json({
 			op: 9,
 			data: {
-				message: "You've sent invalid JSON!",
+				message: 'You\'ve sent invalid JSON!',
 			},
-			type: "ERROR",
+			type: 'ERROR',
 		});
 
 		// Close the connection
@@ -60,12 +54,12 @@ function socketHandler(
 	switch (user.handshakeComplete) {
 		case false:
 			// Await identify payload
-			if (message.type == "IDENTIFY" && message.op == 11) {
+			if (message.type == 'IDENTIFY' && message.op == 11) {
 				if (message.data.token) {
 					// Check that the token is valid
 					if (!checkTokenAuth(message.data.token)) {
 						console.log(
-							`Rejected improper handshake from ${username}!`
+							`Rejected improper handshake from ${username}!`,
 						);
 
 						// Close the connection
@@ -82,77 +76,42 @@ function socketHandler(
 
 						const decodedToken = jwt.verify(
 							message.data.token,
-							process.env.JWT_SECRET
+							process.env.JWT_SECRET,
 						) as Token;
 
 						username = decodedToken.username;
 					} catch {
 						// Set username to "Unknown"
-						username = "Unknown";
+						username = 'Unknown';
 					}
 				}
-
-				const channelsL = new Map();
-				// How to iterate over a map
-				for (const [, channel] of channels) {
-					// Check if the user is in the channel
-					if (channel.members.has(user.id)) {
-						// Add it to our channels map
-						channelsL.set(channel.id, {
-							name: channel.name,
-							id: channel.id,
-							description: channel.description,
-							owner: channel.owner,
-						});
-					} else {
-						return;
-					}
-				}
-
-				const usersTo = new Map();
-
-				// Iterate over the users
-				for (const [, user] of users) {
-					// Add it to our users map
-					usersTo.set(user.id, {
-						username: user.username,
-						id: user.id,
-						avatarURL: user.avatarURL,
-						permissions: user.permissions,
-					});
-				}
-
-				// Convert our map to an array of only the values, also change the map to an array
-				const channelsO = Array.from(channelsL.values());
-				const usersToO = Array.from(usersTo.values());
 
 				// Send the identify ack
 				ws.json({
 					op: 12,
 					data: {
-						channels: JSON.stringify(channelsO),
-						users: JSON.stringify(usersToO),
+						channels: [],
+						users: [],
 					},
-					type: "READY",
+					type: 'READY',
 				});
 
 				// Set handshake complete to true
 				user.handshakeComplete = true;
-			}
-			// Else, close the connection
+			} // Else, close the connection
 			else {
 				// Log that we're rejecting an improper handshake
 				console.log(
-					`Rejected message from ${username} as handshake was incomplete!`
+					`Rejected message from ${username} as handshake was incomplete!`,
 				);
 
 				// Send the error control command to the client
 				ws.json({
 					op: 9,
 					data: {
-						message: "You've sent a message before identifying!",
+						message: 'You\'ve sent a message before identifying!',
 					},
-					type: "ERROR",
+					type: 'ERROR',
 				});
 
 				// Close the connection
@@ -161,7 +120,7 @@ function socketHandler(
 			break;
 		case true:
 			// Handle heartbeat
-			if (message.op == 11 && message.type == "HEARTBEAT_ACK") {
+			if (message.op == 11 && message.type == 'HEARTBEAT_ACK') {
 				// We don't need to do anything here, the client is just acknowledging the heartbeat
 				return;
 			}
@@ -171,15 +130,16 @@ function socketHandler(
 				// Verify that channel is provided
 				if (!message.data.channel) {
 					console.log(
-						`${username} requested to join a channel but didn't provide one!`
+						`${username} requested to join a channel but didn't provide one!`,
 					);
 
 					ws.json({
 						op: 9,
 						data: {
-							message: "You've sent a message without a channel!",
+							message:
+								'You\'ve sent a message without a channel!',
 						},
-						type: "ERROR",
+						type: 'ERROR',
 					});
 					return;
 				}
@@ -191,9 +151,9 @@ function socketHandler(
 					ws.json({
 						op: 9,
 						data: {
-							message: "That channel does not exist!",
+							message: 'That channel does not exist!',
 						},
-						type: "ERROR",
+						type: 'ERROR',
 					});
 					return;
 				}
@@ -201,15 +161,15 @@ function socketHandler(
 				// Verify that the user is actually in the channel requested
 				if (!channels.get(message.data.channel).members.has(user.id)) {
 					console.log(
-						`${username} requested to join a channel they're not in!`
+						`${username} requested to join a channel they're not in!`,
 					);
 
 					return ws.json({
 						op: 9,
 						data: {
-							message: "You are not in that channel!",
+							message: 'You are not in that channel!',
 						},
-						type: "ERROR",
+						type: 'ERROR',
 					});
 				}
 			}
@@ -219,14 +179,14 @@ function socketHandler(
 				case 0: {
 					// Message
 					// check if the message is empty
-					if (message.data.message == "") {
+					if (message.data.message == '') {
 						// Return send error that the message is empty
 						return ws.json({
 							op: 9,
 							data: {
-								message: "You can't send an empty message!",
+								message: 'You can\'t send an empty message!',
 							},
-							type: "ERROR",
+							type: 'ERROR',
 						});
 					}
 
@@ -234,7 +194,7 @@ function socketHandler(
 					const message_ = new Message(
 						message.data.content,
 						user.id,
-						channels.get(message.data.channel)
+						channels.get(message.data.channel),
 					);
 
 					// Send message
@@ -249,9 +209,9 @@ function socketHandler(
 						ws.json({
 							op: 9,
 							data: {
-								message: "Invalid status!",
+								message: 'Invalid status!',
 							},
-							type: "ERROR",
+							type: 'ERROR',
 						});
 					}
 
@@ -266,7 +226,7 @@ function socketHandler(
 
 				default: {
 					console.error(
-						`Client ${username} sent an invalid op code!`
+						`Client ${username} sent an invalid op code!`,
 					);
 					console.error(message);
 					break;
