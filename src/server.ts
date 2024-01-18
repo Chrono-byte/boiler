@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (C) 2023 Hammer Authors <chrono@disilla.org>
+ * Copyright (C) 2023 <chrono@disilla.org>
  */
 
 // external imports
